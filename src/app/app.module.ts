@@ -4,10 +4,11 @@ import { AppService } from './app.service';
 import { configModule } from './modules/config.module';
 import { LoggerMiddleware } from '../common/middlewares/logger.middleware';
 import { RegionModule } from '../region/region.module';
+import { CategoryModule } from '../category/category.module';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-  imports: [configModule, RegionModule, CommonModule],
+  imports: [configModule, RegionModule, CommonModule, CategoryModule],
   controllers: [AppController],
   providers: [AppService],
 })
