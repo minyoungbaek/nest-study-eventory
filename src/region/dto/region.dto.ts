@@ -18,7 +18,7 @@ export class RegionDto {
     return {
       id: region.id,
       name: region.name,
-    };
+    }; 
   }
 
   static fromArray(regions: RegionData[]): RegionDto[] {
