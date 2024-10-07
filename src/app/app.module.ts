@@ -10,7 +10,14 @@ import { ReviewModule } from '../review/review.module';
 import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [configModule, RegionModule, CommonModule, ReviewModule, UserModule],
+  imports: [
+    configModule,
+    RegionModule,
+    CommonModule,
+    CategoryModule,
+    ReviewModule,
+    UserModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
