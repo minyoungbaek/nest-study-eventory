@@ -57,23 +57,25 @@
     - POST /refresh **(Week5)**
 - User
     - GET /me **(Week5-HW)**
-    - GET /:userId **(Week5-HW)**
+    - GET /:userId **(Week5-HW)** 
+    - DELETE /:userId [**(Week3)**](https://github.com/worjs/nest-study-eventory/issues/32)
 - Event
     - GET / [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/17)
     - GET /me **(Week5-HW)**
     - GET /:eventId [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/16)
     - POST / [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/14)
-    - PUT or PATCH /:eventId **(Week3-HW)**
-    - DELETE /:eventId **(Week3-HW)**
+    - PUT or PATCH /:eventId [**(Week3-HW)**](https://github.com/worjs/nest-study-eventory/issues/33)
+    - DELETE /:eventId [**(Week3-HW)**](https://github.com/worjs/nest-study-eventory/issues/34)
     - POST /:eventId/join [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/18)
     - POST /:eventId/out [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/19)
+    - **(필수)** User Soft Delete에 따른 Repository 구현 변경 [**(Week3-HW)**](https://github.com/worjs/nest-study-eventory/issues/36)
 - Review
     - GET / [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/12)
     - GET /:reviewId [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/11)
     - POST / [**(Week2)**](https://github.com/worjs/nest-study-eventory/issues/10)
-    - PUT /:reviewId **(Week3)**
-    - PATCH /:reviewId **(Week3)**
-    - DELETE /:reviewId **(Week3)**
+    - PUT /:reviewId [**(Week3)**](https://github.com/worjs/nest-study-eventory/issues/28)
+    - PATCH /:reviewId [**(Week3)**](https://github.com/worjs/nest-study-eventory/issues/29)
+    - DELETE /:reviewId [**(Week3)**](https://github.com/worjs/nest-study-eventory/issues/30)
 - Region 
     - GET / [**(Week1)**](https://github.com/worjs/nest-study-eventory/issues/6)
       [**(Week2-HW)**](https://github.com/worjs/nest-study-eventory/issues/9)
@@ -86,6 +88,7 @@
 
 
 ## DB Schema
-아래는 DB 스키마입니다. 역시 변경 가능성이 있습니다.
-![image](https://github.com/user-attachments/assets/1ffe4912-5e79-4826-99f1-0c8641b0c527)
+아래는 Week3 기준 DB 스키마입니다. 역시 변경 가능성이 있습니다.
+![image](https://github.com/user-attachments/assets/32b8ca39-7759-4a2e-be13-0c50dfcaea5f)
+
 
