@@ -31,9 +31,10 @@ export class ReviewRepository {
   }
 
   async getUserById(userId: number): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: {
         id: userId,
+        deletedAt: null,
       },
     });
   }
@@ -53,6 +54,9 @@ export class ReviewRepository {
           eventId,
           userId,
         },
+        user: {
+          deletedAt: null,
+        },
       },
     });
 
@@ -65,6 +69,9 @@ export class ReviewRepository {
         eventId_userId: {
           eventId,
           userId,
+        },
+        user: {
+          deletedAt: null,
         },
       },
     });
@@ -92,7 +99,10 @@ export class ReviewRepository {
     return this.prisma.review.findMany({
       where: {
         eventId: query.eventId,
-        userId: query.userId,
+        user: {
+          deletedAt: null,
+          id: query.userId,
+        },
       },
       select: {
         id: true,

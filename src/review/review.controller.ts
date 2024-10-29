@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Patch,
@@ -73,6 +74,7 @@ export class ReviewController {
   }
 
   @Delete(':reviewId')
+  @HttpCode(204)
   @ApiOperation({ summary: '리뷰를 삭제합니다' })
   @ApiNoContentResponse()
   async deleteReview(
