@@ -140,4 +140,14 @@ export class ReviewService {
 
     return ReviewDto.from(updatedReview);
   }
+
+  async deleteReview(reviewId: number): Promise<void> {
+    const review = await this.reviewRepository.getReviewById(reviewId);
+
+    if (!review) {
+      throw new NotFoundException('Review가 존재하지 않습니다.');
+    }
+
+    await this.reviewRepository.deleteReview(reviewId);
+  }
 }

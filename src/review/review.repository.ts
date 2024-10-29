@@ -128,4 +128,12 @@ export class ReviewRepository {
       },
     });
   }
+
+  async deleteReview(reviewId: number): Promise<void> {
+    await this.prisma.review.delete({
+      where: {
+        id: reviewId,
+      },
+    });
+  }
 }

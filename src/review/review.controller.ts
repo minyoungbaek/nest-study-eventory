@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -12,6 +13,7 @@ import {
 import { ReviewService } from './review.service';
 import {
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -68,5 +70,14 @@ export class ReviewController {
     @Body() payload: PatchUpdateReviewPayload,
   ): Promise<ReviewDto> {
     return this.reviewService.patchUpdateReview(reviewId, payload);
+  }
+
+  @Delete(':reviewId')
+  @ApiOperation({ summary: '리뷰를 삭제합니다' })
+  @ApiNoContentResponse()
+  async deleteReview(
+    @Param('reviewId', ParseIntPipe) reviewId: number,
+  ): Promise<void> {
+    return this.reviewService.deleteReview(reviewId);
   }
 }
