@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -19,6 +20,7 @@ import { ReviewDto, ReviewListDto } from './dto/review.dto';
 import { CreateReviewPayload } from './payload/create-review.payload';
 import { ReviewQuery } from './query/review.query';
 import { PutUpdateReviewPayload } from './payload/put-update-review.payload';
+import { PatchUpdateReviewPayload } from './payload/patch-update-review.payload';
 
 @Controller('reviews')
 @ApiTags('Review API')
@@ -56,5 +58,15 @@ export class ReviewController {
     @Body() payload: PutUpdateReviewPayload,
   ): Promise<ReviewDto> {
     return this.reviewService.putUpdateReview(reviewId, payload);
+  }
+
+  @Patch(':reviewId')
+  @ApiOperation({ summary: '리뷰를 수정합니다' })
+  @ApiOkResponse({ type: ReviewDto })
+  async patchUpdateReview(
+    @Param('reviewId', ParseIntPipe) reviewId: number,
+    @Body() payload: PatchUpdateReviewPayload,
+  ): Promise<ReviewDto> {
+    return this.reviewService.patchUpdateReview(reviewId, payload);
   }
 }
