@@ -4,6 +4,7 @@ import { CreateReviewData } from './type/create-review-data.type';
 import { ReviewData } from './type/review-data.type';
 import { User, Event } from '@prisma/client';
 import { ReviewQuery } from './query/review.query';
+import { UpdateReviewData } from './type/update-review-data.type';
 
 @Injectable()
 export class ReviewRepository {
@@ -92,6 +93,30 @@ export class ReviewRepository {
       where: {
         eventId: query.eventId,
         userId: query.userId,
+      },
+      select: {
+        id: true,
+        userId: true,
+        eventId: true,
+        score: true,
+        title: true,
+        description: true,
+      },
+    });
+  }
+
+  async updateReview(
+    reviewId: number,
+    data: UpdateReviewData,
+  ): Promise<ReviewData> {
+    return this.prisma.review.update({
+      where: {
+        id: reviewId,
+      },
+      data: {
+        score: data.score,
+        title: data.title,
+        description: data.description,
       },
       select: {
         id: true,

@@ -8,6 +8,8 @@ import { CreateReviewPayload } from './payload/create-review.payload';
 import { ReviewDto, ReviewListDto } from './dto/review.dto';
 import { CreateReviewData } from './type/create-review-data.type';
 import { ReviewQuery } from './query/review.query';
+import { UpdateReviewData } from './type/update-review-data.type';
+import { PutUpdateReviewPayload } from './payload/put-update-review.payload';
 
 @Injectable()
 export class ReviewService {
@@ -79,5 +81,29 @@ export class ReviewService {
     const reviews = await this.reviewRepository.getReviews(query);
 
     return ReviewListDto.from(reviews);
+  }
+
+  async putUpdateReview(
+    reviewId: number,
+    payload: PutUpdateReviewPayload,
+  ): Promise<ReviewDto> {
+    const review = await this.reviewRepository.getReviewById(reviewId);
+
+    if (!review) {
+      throw new NotFoundException('Review가 존재하지 않습니다.');
+    }
+
+    const updateData: UpdateReviewData = {
+      score: payload.score,
+      title: payload.title,
+      description: payload.description ?? null,
+    };
+
+    const updatedReview = await this.reviewRepository.updateReview(
+      reviewId,
+      updateData,
+    );
+
+    return ReviewDto.from(updatedReview);
   }
 }
