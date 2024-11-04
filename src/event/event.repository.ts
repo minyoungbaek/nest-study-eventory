@@ -34,13 +34,33 @@ export class EventRepository {
     });
   }
 
-  async isEventExist(eventId: number): Promise<boolean> {
-    const event = await this.prisma.event.findUnique({
+  async isHostIdExist(hostId: number): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
       where: {
-        id: eventId,
+        id: hostId,
       },
     });
 
-    return !!event;
+    return !!user;
+  }
+
+  async isCategoryExist(categoryId: number): Promise<boolean> {
+    const category = await this.prisma.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    return !!category;
+  }
+
+  async isCityExist(cityId: number): Promise<boolean> {
+    const city = await this.prisma.city.findUnique({
+      where: {
+        id: cityId,
+      },
+    });
+
+    return !!city;
   }
 }

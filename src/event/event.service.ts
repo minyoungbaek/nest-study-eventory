@@ -24,6 +24,37 @@ export class EventService {
       maxPeople: payload.maxPeople,
     };
 
+    const isHostIdExist = await this.eventRepository.isHostIdExist(
+      payload.hostId,
+    );
+    if (!isHostIdExist) {
+      throw new ConflictException('해당 유저가 존재하지 않습니다.');
+    }
+
+    const isCategoryExist = await this.eventRepository.isCategoryExist(
+      payload.categoryId,
+    );
+    if (!isCategoryExist) {
+      throw new ConflictException('해당 카테고리가 존재하지 않습니다.');
+    }
+
+    const isCityExist = await this.eventRepository.isCityExist(payload.cityId);
+    if (!isCityExist) {
+      throw new ConflictException('해당 도시가 존재하지 않습니다.');
+    }
+
+    if (payload.startTime > payload.endTime) {
+      throw new ConflictException(
+        '시작 시간이 종료 시간보다 늦을 수 없습니다.',
+      );
+    }
+
+    if (payload.startTime < new Date()) {
+      throw new ConflictException(
+        '이미 지난 시간에 대한 이벤트는 생성할 수 없습니다.',
+      );
+    }
+
     const event = await this.eventRepository.createEvent(createData);
 
     return EventDto.from(event);

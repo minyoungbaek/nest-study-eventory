@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsString, IsDate, Min, Max } from 'class-validator';
+import { IsInt, IsString, IsDate, Min } from 'class-validator';
 
 export class CreateEventPayload {
   @IsInt()
@@ -25,8 +25,6 @@ export class CreateEventPayload {
   description!: string;
 
   @IsInt()
-  @Min(1)
-  @Max(30)
   @ApiProperty({
     description: '카테고리',
     type: Number,
@@ -34,8 +32,6 @@ export class CreateEventPayload {
   categoryId!: number;
 
   @IsInt()
-  @Min(1)
-  @Max(100)
   @ApiProperty({
     description: '지역',
     type: Number,
