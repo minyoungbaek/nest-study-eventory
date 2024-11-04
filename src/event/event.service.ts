@@ -24,7 +24,7 @@ export class EventService {
       maxPeople: payload.maxPeople,
     };
 
-    const isHostIdExist = await this.eventRepository.isHostIdExist(
+    const isHostIdExist = await this.eventRepository.isUserExist(
       payload.hostId,
     );
     if (!isHostIdExist) {

@@ -19,6 +19,11 @@ export class EventRepository {
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
+        eventJoin: {
+          create: {
+            userId: data.hostId,
+          },
+        },
       },
       select: {
         id: true,
@@ -34,7 +39,7 @@ export class EventRepository {
     });
   }
 
-  async isHostIdExist(hostId: number): Promise<boolean> {
+  async isUserExist(hostId: number): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: {
         id: hostId,

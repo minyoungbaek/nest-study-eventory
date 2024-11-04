@@ -5,7 +5,6 @@ import { configModule } from './modules/config.module';
 import { LoggerMiddleware } from '../common/middlewares/logger.middleware';
 import { RegionModule } from '../region/region.module';
 import { CategoryModule } from '../category/category.module';
-import { CategoryModule } from '../category/category.module';
 import { CommonModule } from '../common/common.module';
 import { ReviewModule } from '../review/review.module';
 import { EventModule } from '../event/event.module';
