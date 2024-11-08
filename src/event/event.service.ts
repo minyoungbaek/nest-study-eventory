@@ -5,7 +5,8 @@ import {
 } from '@nestjs/common';
 import { EventRepository } from './event.repository';
 import { CreateEventPayload } from './payload/create-event.payload';
-import { EventDto } from './dto/event.dto';
+import { EventDto, EventListDto } from './dto/event.dto';
+import { EventQuery } from './query/event.query';
 import { CreateEventData } from './type/create-event-data.type';
 
 @Injectable()
@@ -58,5 +59,11 @@ export class EventService {
     const event = await this.eventRepository.createEvent(createData);
 
     return EventDto.from(event);
+  }
+
+  async getEvents(query: EventQuery): Promise<EventListDto> {
+    const events = await this.eventRepository.getEvents(query);
+
+    return EventListDto.from(events);
   }
 }

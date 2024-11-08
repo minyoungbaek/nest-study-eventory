@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services/prisma.service';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
-import { Event } from '@prisma/client';
+import { User, Event } from '@prisma/client';
+import { EventQuery } from './query/event.query';
 
 @Injectable()
 export class EventRepository {
@@ -67,5 +68,45 @@ export class EventRepository {
     });
 
     return !!city;
+  }
+
+  async getEventById(eventId: number): Promise<EventData | null> {
+    return this.prisma.event.findUnique({
+      where: {
+        id: eventId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async getEvents(query: EventQuery): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        hostId: query.hostId,
+        categoryId: query.categoryId,
+        cityId: query.cityId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
   }
 }
