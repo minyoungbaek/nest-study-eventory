@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services/prisma.service';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
-import { User, Event } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 
 @Injectable()
@@ -85,6 +84,57 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
+      },
+    });
+  }
+
+  async isUserJoinedEvent(userId: number, eventId: number): Promise<boolean> {
+    const event = await this.prisma.eventJoin.findUnique({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return !!event;
+  }
+
+  async getEventParticipantCount(eventId: number): Promise<number> {
+    return this.prisma.eventJoin.count({
+      where: {
+        eventId,
+      },
+    });
+  }
+
+  async joinEvent(userId: number, eventId: number): Promise<void> {
+    await this.prisma.eventJoin.create({
+      data: {
+        userId,
+        eventId,
+      },
+      select: {
+        id: true,
+        userId: true,
+        eventId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async outEvent(userId: number, eventId: number): Promise<void> {
+    await this.prisma.eventJoin.delete({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
       },
     });
   }

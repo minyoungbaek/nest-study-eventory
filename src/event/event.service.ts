@@ -52,7 +52,7 @@ export class EventService {
 
     if (payload.startTime < new Date()) {
       throw new ConflictException(
-        '이미 지난 시간에 대한 이벤트는 생성할 수 없습니다.',
+        '이미 지난 시간에 대한 모임은 생성할 수 없습니다.',
       );
     }
 
@@ -61,9 +61,82 @@ export class EventService {
     return EventDto.from(event);
   }
 
+  async getEventById(eventId: number): Promise<EventDto> {
+    const event = await this.eventRepository.getEventById(eventId);
+
+    if (!event) {
+      throw new NotFoundException('모임이 존재하지 않습니다.');
+    }
+
+    return EventDto.from(event);
+  }
+
   async getEvents(query: EventQuery): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
 
     return EventListDto.from(events);
+  }
+
+  async joinEvent(eventId: number, userId: number): Promise<void> {
+    const user = await this.eventRepository.isUserExist(userId);
+    if (!user) {
+      throw new ConflictException('해당 유저가 존재하지 않습니다.');
+    }
+
+    const event = await this.eventRepository.getEventById(eventId);
+    if (!event) {
+      throw new NotFoundException('모임이 존재하지 않습니다.');
+    }
+
+    const userJoinedEvent = await this.eventRepository.isUserJoinedEvent(
+      userId,
+      eventId,
+    );
+    if (userJoinedEvent) {
+      throw new ConflictException('이미 참가한 모임입니다.');
+    }
+
+    if (event.endTime < new Date()) {
+      throw new ConflictException('이미 종료된 모임에는 참가할 수 없습니다.');
+    }
+
+    const currentParticipantCount =
+      await this.eventRepository.getEventParticipantCount(eventId);
+
+    if (event.maxPeople == currentParticipantCount) {
+      throw new ConflictException('이미 정원이 다 찼습니다.');
+    }
+
+    await this.eventRepository.joinEvent(userId, eventId);
+  }
+
+  async outEvent(eventId: number, userId: number): Promise<void> {
+    const user = await this.eventRepository.isUserExist(userId);
+    if (!user) {
+      throw new ConflictException('해당 유저가 존재하지 않습니다.');
+    }
+
+    const event = await this.eventRepository.getEventById(eventId);
+    if (!event) {
+      throw new ConflictException('모임이 존재하지 않습니다.');
+    }
+
+    const userJoinedEvent = await this.eventRepository.isUserJoinedEvent(
+      userId,
+      eventId,
+    );
+    if (!userJoinedEvent) {
+      throw new ConflictException('참가하지 않은 모임입니다.');
+    }
+
+    if (event.endTime < new Date()) {
+      throw new ConflictException('이미 종료된 모임에서는 나갈 수 없습니다.');
+    }
+
+    if (event.hostId == userId) {
+      throw new ConflictException('호스트는 모임에서 나갈 수 없습니다.');
+    }
+
+    await this.eventRepository.outEvent(userId, eventId);
   }
 }
