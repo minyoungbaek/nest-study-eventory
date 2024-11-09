@@ -39,10 +39,11 @@ export class EventRepository {
     });
   }
 
-  async isUserExist(hostId: number): Promise<boolean> {
+  async isUserExist(userId: number): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: {
-        id: hostId,
+        id: userId,
+        deletedAt: null,
       },
     });
 

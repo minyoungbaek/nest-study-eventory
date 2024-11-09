@@ -80,7 +80,7 @@ export class EventService {
   async joinEvent(eventId: number, userId: number): Promise<void> {
     const user = await this.eventRepository.isUserExist(userId);
     if (!user) {
-      throw new ConflictException('해당 유저가 존재하지 않습니다.');
+      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
     }
 
     const event = await this.eventRepository.getEventById(eventId);

@@ -6,6 +6,7 @@ import {
   Get,
   Query,
   ParseIntPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import {
@@ -51,6 +52,7 @@ export class EventController {
   @Post(':eventId/join')
   @ApiOperation({ summary: '유저를 event에 참여시킵니다' })
   @ApiNoContentResponse()
+  @HttpCode(204)
   async joinEvent(
     @Param('eventId', ParseIntPipe) eventId: number,
     @Body() payload: EventParticipantPayload,
@@ -61,6 +63,7 @@ export class EventController {
   @Post(':eventId/out')
   @ApiOperation({ summary: '유저를 event에서 내보냅니다' })
   @ApiNoContentResponse()
+  @HttpCode(204)
   async outEvent(
     @Param('eventId', ParseIntPipe) eventId: number,
     @Body() payload: EventParticipantPayload,
