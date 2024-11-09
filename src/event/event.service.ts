@@ -25,22 +25,20 @@ export class EventService {
       maxPeople: payload.maxPeople,
     };
 
-    const isHostIdExist = await this.eventRepository.isUserExist(
-      payload.hostId,
-    );
-    if (!isHostIdExist) {
+    const HostExist = await this.eventRepository.isUserExist(payload.hostId);
+    if (!HostExist) {
       throw new ConflictException('해당 유저가 존재하지 않습니다.');
     }
 
-    const isCategoryExist = await this.eventRepository.isCategoryExist(
+    const CategoryExist = await this.eventRepository.isCategoryExist(
       payload.categoryId,
     );
-    if (!isCategoryExist) {
+    if (!CategoryExist) {
       throw new ConflictException('해당 카테고리가 존재하지 않습니다.');
     }
 
-    const isCityExist = await this.eventRepository.isCityExist(payload.cityId);
-    if (!isCityExist) {
+    const CityExist = await this.eventRepository.isCityExist(payload.cityId);
+    if (!CityExist) {
       throw new ConflictException('해당 도시가 존재하지 않습니다.');
     }
 
