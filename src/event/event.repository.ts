@@ -3,6 +3,7 @@ import { PrismaService } from '../common/services/prisma.service';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
 import { EventQuery } from './query/event.query';
+import { UpdateEventData } from './type/update-event-data.type';
 
 @Injectable()
 export class EventRepository {
@@ -159,5 +160,51 @@ export class EventRepository {
         maxPeople: true,
       },
     });
+  }
+
+  async updateEvent(
+    eventId: number,
+    data: UpdateEventData,
+  ): Promise<EventData> {
+    return this.prisma.event.update({
+      where: {
+        id: eventId,
+      },
+      data: {
+        title: data.title,
+        description: data.description,
+        categoryId: data.categoryId,
+        cityId: data.cityId,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        maxPeople: data.maxPeople,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async deleteEvent(eventId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.eventJoin.deleteMany({
+        where: {
+          eventId: eventId,
+        },
+      }),
+      this.prisma.event.delete({
+        where: {
+          id: eventId,
+        },
+      }),
+    ]);
   }
 }

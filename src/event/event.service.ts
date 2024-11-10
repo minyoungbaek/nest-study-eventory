@@ -2,12 +2,15 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { EventRepository } from './event.repository';
 import { CreateEventPayload } from './payload/create-event.payload';
 import { EventDto, EventListDto } from './dto/event.dto';
 import { EventQuery } from './query/event.query';
 import { CreateEventData } from './type/create-event-data.type';
+import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
+import { UpdateEventData } from './type/update-event-data.type';
 
 @Injectable()
 export class EventService {
@@ -136,5 +139,112 @@ export class EventService {
     }
 
     await this.eventRepository.outEvent(userId, eventId);
+  }
+
+  async patchUpdateEvent(
+    eventId: number,
+    payload: PatchUpdateEventPayload,
+  ): Promise<EventDto> {
+    const event = await this.eventRepository.getEventById(eventId);
+
+    if (!event) {
+      throw new NotFoundException('모임이 존재하지 않습니다.');
+    }
+    if (payload.title === null) {
+      throw new BadRequestException('모임 이름은 null이 될 수 없습니다.');
+    }
+    if (payload.description === null) {
+      throw new BadRequestException('모임 설명은 null이 될 수 없습니다.');
+    }
+    if (payload.categoryId === null) {
+      throw new BadRequestException('카테고리는 null이 될 수 없습니다.');
+    }
+    if (payload.cityId === null) {
+      throw new BadRequestException('지역은 null이 될 수 없습니다.');
+    }
+    if (payload.startTime === null) {
+      throw new BadRequestException('시작일은 null이 될 수 없습니다.');
+    }
+    if (payload.endTime === null) {
+      throw new BadRequestException('종료일은 null이 될 수 없습니다.');
+    }
+    if (payload.maxPeople === null) {
+      throw new BadRequestException('최대 정원은 null이 될 수 없습니다.');
+    }
+
+    //category 존재 여부
+    if (payload.categoryId) {
+      const CategoryExist = await this.eventRepository.isCategoryExist(
+        payload.categoryId,
+      );
+      if (!CategoryExist) {
+        throw new ConflictException('해당 카테고리가 존재하지 않습니다.');
+      }
+    }
+    //city 존재 여부
+    if (payload.cityId) {
+      const CityExist = await this.eventRepository.isCityExist(payload.cityId);
+      if (!CityExist) {
+        throw new ConflictException('해당 도시가 존재하지 않습니다.');
+      }
+    }
+
+    //시작일 < 종료일
+    if (
+      payload.startTime &&
+      payload.endTime &&
+      payload.startTime > payload.endTime
+    ) {
+      throw new ConflictException(
+        '시작 시간이 종료 시간보다 늦을 수 없습니다.',
+      );
+    }
+    //시작일 < 현재시간
+    if (
+      payload.startTime &&
+      payload.endTime &&
+      payload.startTime < new Date()
+    ) {
+      throw new ConflictException(
+        '시작 시간을 현재 시간보다 더 빠르게 수정할 수 없습니다.',
+      );
+    }
+
+    //정원 < 참가자 수
+    const currentParticipantCount =
+      await this.eventRepository.getEventParticipantCount(eventId);
+
+    if (payload.maxPeople && payload.maxPeople < currentParticipantCount) {
+      throw new ConflictException(
+        '정원을 참가자 수보다 적게 수정할 수 없습니다.',
+      );
+    }
+
+    const updateData: UpdateEventData = {
+      title: payload.title,
+      description: payload.description,
+      categoryId: payload.categoryId,
+      cityId: payload.cityId,
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+      maxPeople: payload.maxPeople,
+    };
+
+    const updatedEvent = await this.eventRepository.updateEvent(
+      eventId,
+      updateData,
+    );
+
+    return EventDto.from(updatedEvent);
+  }
+
+  async deleteEvent(eventId: number): Promise<void> {
+    const event = await this.eventRepository.getEventById(eventId);
+
+    if (!event) {
+      throw new NotFoundException('모임이 존재하지 않습니다.');
+    }
+
+    await this.eventRepository.deleteEvent(eventId);
   }
 }
