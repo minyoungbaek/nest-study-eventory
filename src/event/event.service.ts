@@ -189,15 +189,13 @@ export class EventService {
       }
     }
 
-    //시작일 < 종료일
+    //시작일 > 종료일
     if (
       payload.startTime &&
       payload.endTime &&
       payload.startTime > payload.endTime
     ) {
-      throw new ConflictException(
-        '시작 시간이 종료 시간보다 늦을 수 없습니다.',
-      );
+      throw new ConflictException('시작 시간은 종료 시간보다 앞서야 합니다.');
     }
     //시작일 < 현재시간
     if (
@@ -205,9 +203,30 @@ export class EventService {
       payload.endTime &&
       payload.startTime < new Date()
     ) {
-      throw new ConflictException(
-        '시작 시간을 현재 시간보다 더 빠르게 수정할 수 없습니다.',
-      );
+      throw new ConflictException('시작 시간은 현재 시간 이후여야 합니다.');
+    }
+
+    //종료일 < 현재시간
+    if (payload.startTime && payload.endTime && payload.endTime < new Date()) {
+      throw new ConflictException('종료 시간은 현재 시간 이후여야 합니다.');
+    }
+
+    // new시작일 > 종료일
+    if (
+      payload.startTime &&
+      !payload.endTime &&
+      payload.startTime > event.endTime
+    ) {
+      throw new ConflictException('시작 시간은 종료 시간보다 앞서야 합니다.');
+    }
+
+    // new종료일 < 시작일
+    if (
+      !payload.startTime &&
+      payload.endTime &&
+      payload.endTime < event.startTime
+    ) {
+      throw new ConflictException('종료 시간은 시작 시간보다 늦어야 합니다.');
     }
 
     //정원 < 참가자 수
