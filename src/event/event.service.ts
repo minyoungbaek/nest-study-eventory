@@ -30,19 +30,19 @@ export class EventService {
 
     const HostExist = await this.eventRepository.isUserExist(payload.hostId);
     if (!HostExist) {
-      throw new ConflictException('해당 유저가 존재하지 않습니다.');
+      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
     }
 
     const CategoryExist = await this.eventRepository.isCategoryExist(
       payload.categoryId,
     );
     if (!CategoryExist) {
-      throw new ConflictException('해당 카테고리가 존재하지 않습니다.');
+      throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
     }
 
     const CityExist = await this.eventRepository.isCityExist(payload.cityId);
     if (!CityExist) {
-      throw new ConflictException('해당 도시가 존재하지 않습니다.');
+      throw new NotFoundException('해당 도시가 존재하지 않습니다.');
     }
 
     if (payload.startTime > payload.endTime) {
@@ -114,12 +114,12 @@ export class EventService {
   async outEvent(eventId: number, userId: number): Promise<void> {
     const user = await this.eventRepository.isUserExist(userId);
     if (!user) {
-      throw new ConflictException('해당 유저가 존재하지 않습니다.');
+      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
     }
 
     const event = await this.eventRepository.getEventById(eventId);
     if (!event) {
-      throw new ConflictException('모임이 존재하지 않습니다.');
+      throw new NotFoundException('모임이 존재하지 않습니다.');
     }
 
     const userJoinedEvent = await this.eventRepository.isUserJoinedEvent(
@@ -172,61 +172,45 @@ export class EventService {
       throw new BadRequestException('최대 정원은 null이 될 수 없습니다.');
     }
 
+    //시작전까지만 수정 가능
+    if (event.startTime < new Date()) {
+      throw new ConflictException('이미 시작된 모임은 수정할 수 없습니다.');
+    }
+
     //category 존재 여부
-    if (payload.categoryId) {
+    if (payload.categoryId != undefined) {
+      if (payload.categoryId == 0) {
+        throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
+      }
+
       const CategoryExist = await this.eventRepository.isCategoryExist(
         payload.categoryId,
       );
       if (!CategoryExist) {
-        throw new ConflictException('해당 카테고리가 존재하지 않습니다.');
+        throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
       }
     }
     //city 존재 여부
-    if (payload.cityId) {
+    if (payload.cityId != undefined) {
+      if (payload.cityId == 0) {
+        throw new NotFoundException('해당 도시가 존재하지 않습니다.');
+      }
+
       const CityExist = await this.eventRepository.isCityExist(payload.cityId);
       if (!CityExist) {
-        throw new ConflictException('해당 도시가 존재하지 않습니다.');
+        throw new NotFoundException('해당 도시가 존재하지 않습니다.');
       }
     }
 
-    //시작일 > 종료일
-    if (
-      payload.startTime &&
-      payload.endTime &&
-      payload.startTime > payload.endTime
-    ) {
+    const startTime = payload.startTime ?? event.startTime;
+    const endTime = payload.endTime ?? event.endTime;
+
+    if (startTime > endTime) {
       throw new ConflictException('시작 시간은 종료 시간보다 앞서야 합니다.');
     }
-    //시작일 < 현재시간
-    if (
-      payload.startTime &&
-      payload.endTime &&
-      payload.startTime < new Date()
-    ) {
+
+    if (startTime < new Date()) {
       throw new ConflictException('시작 시간은 현재 시간 이후여야 합니다.');
-    }
-
-    //종료일 < 현재시간
-    if (payload.startTime && payload.endTime && payload.endTime < new Date()) {
-      throw new ConflictException('종료 시간은 현재 시간 이후여야 합니다.');
-    }
-
-    // new시작일 > 종료일
-    if (
-      payload.startTime &&
-      !payload.endTime &&
-      payload.startTime > event.endTime
-    ) {
-      throw new ConflictException('시작 시간은 종료 시간보다 앞서야 합니다.');
-    }
-
-    // new종료일 < 시작일
-    if (
-      !payload.startTime &&
-      payload.endTime &&
-      payload.endTime < event.startTime
-    ) {
-      throw new ConflictException('종료 시간은 시작 시간보다 늦어야 합니다.');
     }
 
     //정원 < 참가자 수
@@ -262,6 +246,11 @@ export class EventService {
 
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
+    }
+
+    //시작전까지만 삭제 가능
+    if (event.startTime < new Date()) {
+      throw new ConflictException('이미 시작된 모임은 삭제할 수 없습니다.');
     }
 
     await this.eventRepository.deleteEvent(eventId);
