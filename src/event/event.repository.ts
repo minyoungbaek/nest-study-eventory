@@ -16,10 +16,14 @@ export class EventRepository {
         title: data.title,
         description: data.description,
         categoryId: data.categoryId,
-        cityId: data.cityId,
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
+        eventCity: {
+          create: data.cityIds?.map((cityId) => ({
+            cityId,
+          })),
+        },
         eventJoin: {
           create: {
             userId: data.hostId,
@@ -32,10 +36,15 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
         startTime: true,
         endTime: true,
         maxPeople: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
       },
     });
   }
@@ -82,7 +91,12 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -146,7 +160,11 @@ export class EventRepository {
       where: {
         hostId: query.hostId,
         categoryId: query.categoryId,
-        cityId: query.cityId,
+        eventCity: {
+          some: {
+            cityId: query.cityId,
+          },
+        },
       },
       select: {
         id: true,
@@ -154,7 +172,12 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -174,7 +197,12 @@ export class EventRepository {
         title: data.title,
         description: data.description,
         categoryId: data.categoryId,
-        cityId: data.cityId,
+        eventCity: {
+          deleteMany: {},
+          create: (data.cityIds ?? []).map((cityId) => ({
+            cityId,
+          })),
+        },
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
@@ -185,7 +213,12 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,

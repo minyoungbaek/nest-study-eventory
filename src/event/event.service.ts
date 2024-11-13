@@ -22,7 +22,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIds: payload.cityIds,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
@@ -40,9 +40,20 @@ export class EventService {
       throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
     }
 
-    const CityExist = await this.eventRepository.isCityExist(payload.cityId);
-    if (!CityExist) {
-      throw new NotFoundException('해당 도시가 존재하지 않습니다.');
+    if (payload.cityIds != undefined) {
+      if (payload.cityIds.length == 0) {
+        throw new BadRequestException('지역은 최소 1개 이상이어야 합니다.');
+      }
+      for (const city of payload.cityIds) {
+        if (city == 0) {
+          throw new NotFoundException('해당 지역이 존재하지 않습니다.');
+        }
+
+        const CityExist = await this.eventRepository.isCityExist(city);
+        if (!CityExist) {
+          throw new NotFoundException('해당 지역이 존재하지 않습니다.');
+        }
+      }
     }
 
     if (payload.startTime > payload.endTime) {
@@ -159,7 +170,7 @@ export class EventService {
     if (payload.categoryId === null) {
       throw new BadRequestException('카테고리는 null이 될 수 없습니다.');
     }
-    if (payload.cityId === null) {
+    if (payload.cityIds === null) {
       throw new BadRequestException('지역은 null이 될 수 없습니다.');
     }
     if (payload.startTime === null) {
@@ -191,14 +202,19 @@ export class EventService {
       }
     }
     //city 존재 여부
-    if (payload.cityId != undefined) {
-      if (payload.cityId == 0) {
-        throw new NotFoundException('해당 도시가 존재하지 않습니다.');
+    if (payload.cityIds != undefined) {
+      if (payload.cityIds.length == 0) {
+        throw new BadRequestException('지역은 최소 1개 이상이어야 합니다.');
       }
+      for (const city of payload.cityIds) {
+        if (city == 0) {
+          throw new NotFoundException('해당 지역이 존재하지 않습니다.');
+        }
 
-      const CityExist = await this.eventRepository.isCityExist(payload.cityId);
-      if (!CityExist) {
-        throw new NotFoundException('해당 도시가 존재하지 않습니다.');
+        const CityExist = await this.eventRepository.isCityExist(city);
+        if (!CityExist) {
+          throw new NotFoundException('해당 지역이 존재하지 않습니다.');
+        }
       }
     }
 
@@ -227,7 +243,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIds: payload.cityIds,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
