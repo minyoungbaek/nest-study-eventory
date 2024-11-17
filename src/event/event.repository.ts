@@ -202,8 +202,8 @@ export class EventRepository {
         eventCity: data.cityIds
           ? {
               deleteMany: {},
-              create: (data.cityIds ?? []).map((cityId) => ({
-                cityId,
+              create: data.cityIds.map((cityId) => ({
+                cityId: cityId,
               })),
             }
           : undefined,

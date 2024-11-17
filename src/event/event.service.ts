@@ -41,11 +41,7 @@ export class EventService {
       throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
     }
 
-    if (payload.cityIds != undefined) {
-      if (payload.cityIds.length == 0) {
-        throw new BadRequestException('지역은 최소 1개 이상이어야 합니다.');
-      }
-
+    if (payload.cityIds) {
       const validCityIds = await this.eventRepository.areCitiesExist(
         payload.cityIds,
       );
@@ -201,10 +197,6 @@ export class EventService {
     }
     //city 존재 여부
     if (payload.cityIds) {
-      if (payload.cityIds.length == 0) {
-        throw new BadRequestException('지역은 최소 1개 이상이어야 합니다.');
-      }
-
       const validCityIds = await this.eventRepository.areCitiesExist(
         payload.cityIds,
       );

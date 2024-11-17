@@ -6,6 +6,7 @@ import {
   Min,
   IsDate,
   IsArray,
+  ArrayMinSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -37,6 +38,7 @@ export class PatchUpdateEventPayload {
   @IsOptional()
   @IsInt({ each: true })
   @IsArray()
+  @ArrayMinSize(1)
   @ApiPropertyOptional({
     description: '지역 목록',
     type: [Number],
