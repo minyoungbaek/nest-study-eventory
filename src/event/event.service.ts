@@ -11,6 +11,7 @@ import { EventQuery } from './query/event.query';
 import { CreateEventData } from './type/create-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { UpdateEventData } from './type/update-event-data.type';
+import { valid } from 'joi';
 
 @Injectable()
 export class EventService {
@@ -44,15 +45,12 @@ export class EventService {
       if (payload.cityIds.length == 0) {
         throw new BadRequestException('지역은 최소 1개 이상이어야 합니다.');
       }
-      for (const city of payload.cityIds) {
-        if (city == 0) {
-          throw new NotFoundException('해당 지역이 존재하지 않습니다.');
-        }
 
-        const CityExist = await this.eventRepository.isCityExist(city);
-        if (!CityExist) {
-          throw new NotFoundException('해당 지역이 존재하지 않습니다.');
-        }
+      const validCityIds = await this.eventRepository.areCitiesExist(
+        payload.cityIds,
+      );
+      if (!validCityIds) {
+        throw new NotFoundException('존재하지 않는 지역이 포함되어 있습니다.');
       }
     }
 
@@ -202,19 +200,16 @@ export class EventService {
       }
     }
     //city 존재 여부
-    if (payload.cityIds != undefined) {
+    if (payload.cityIds) {
       if (payload.cityIds.length == 0) {
         throw new BadRequestException('지역은 최소 1개 이상이어야 합니다.');
       }
-      for (const city of payload.cityIds) {
-        if (city == 0) {
-          throw new NotFoundException('해당 지역이 존재하지 않습니다.');
-        }
 
-        const CityExist = await this.eventRepository.isCityExist(city);
-        if (!CityExist) {
-          throw new NotFoundException('해당 지역이 존재하지 않습니다.');
-        }
+      const validCityIds = await this.eventRepository.areCitiesExist(
+        payload.cityIds,
+      );
+      if (!validCityIds) {
+        throw new NotFoundException('존재하지 않는 지역이 포함되어 있습니다.');
       }
     }
 

@@ -20,7 +20,7 @@ export class EventRepository {
         endTime: data.endTime,
         maxPeople: data.maxPeople,
         eventCity: {
-          create: data.cityIds?.map((cityId) => ({
+          create: data.cityIds.map((cityId) => ({
             cityId,
           })),
         },
@@ -70,14 +70,16 @@ export class EventRepository {
     return !!category;
   }
 
-  async isCityExist(cityId: number): Promise<boolean> {
-    const city = await this.prisma.city.findUnique({
+  async areCitiesExist(cityIds: number[]): Promise<boolean> {
+    const cities = await this.prisma.city.findMany({
       where: {
-        id: cityId,
+        id: {
+          in: cityIds,
+        },
       },
     });
 
-    return !!city;
+    return cities.length === cityIds.length;
   }
 
   async getEventById(eventId: number): Promise<EventData | null> {
@@ -197,12 +199,14 @@ export class EventRepository {
         title: data.title,
         description: data.description,
         categoryId: data.categoryId,
-        eventCity: {
-          deleteMany: {},
-          create: (data.cityIds ?? []).map((cityId) => ({
-            cityId,
-          })),
-        },
+        eventCity: data.cityIds
+          ? {
+              deleteMany: {},
+              create: (data.cityIds ?? []).map((cityId) => ({
+                cityId,
+              })),
+            }
+          : undefined,
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
