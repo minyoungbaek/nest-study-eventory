@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsString, IsDate, Min } from 'class-validator';
+import {
+  IsInt,
+  IsString,
+  IsDate,
+  IsArray,
+  Min,
+  ArrayMinSize,
+} from 'class-validator';
 
 export class CreateEventPayload {
   @IsInt()
@@ -31,12 +38,14 @@ export class CreateEventPayload {
   })
   categoryId!: number;
 
-  @IsInt()
+  @IsInt({ each: true })
+  @IsArray()
+  @ArrayMinSize(1)
   @ApiProperty({
-    description: '지역',
-    type: Number,
+    description: '지역 목록',
+    type: [Number],
   })
-  cityId!: number;
+  cityIds!: number[];
 
   @IsDate()
   @Type(() => Date)

@@ -11,6 +11,7 @@ import { EventQuery } from './query/event.query';
 import { CreateEventData } from './type/create-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { UpdateEventData } from './type/update-event-data.type';
+import { valid } from 'joi';
 
 @Injectable()
 export class EventService {
@@ -22,7 +23,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIds: payload.cityIds,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
@@ -40,9 +41,13 @@ export class EventService {
       throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
     }
 
-    const CityExist = await this.eventRepository.isCityExist(payload.cityId);
-    if (!CityExist) {
-      throw new NotFoundException('해당 도시가 존재하지 않습니다.');
+    if (payload.cityIds) {
+      const validCityIds = await this.eventRepository.areCitiesExist(
+        payload.cityIds,
+      );
+      if (!validCityIds) {
+        throw new NotFoundException('존재하지 않는 지역이 포함되어 있습니다.');
+      }
     }
 
     if (payload.startTime > payload.endTime) {
@@ -159,7 +164,7 @@ export class EventService {
     if (payload.categoryId === null) {
       throw new BadRequestException('카테고리는 null이 될 수 없습니다.');
     }
-    if (payload.cityId === null) {
+    if (payload.cityIds === null) {
       throw new BadRequestException('지역은 null이 될 수 없습니다.');
     }
     if (payload.startTime === null) {
@@ -191,14 +196,12 @@ export class EventService {
       }
     }
     //city 존재 여부
-    if (payload.cityId != undefined) {
-      if (payload.cityId == 0) {
-        throw new NotFoundException('해당 도시가 존재하지 않습니다.');
-      }
-
-      const CityExist = await this.eventRepository.isCityExist(payload.cityId);
-      if (!CityExist) {
-        throw new NotFoundException('해당 도시가 존재하지 않습니다.');
+    if (payload.cityIds) {
+      const validCityIds = await this.eventRepository.areCitiesExist(
+        payload.cityIds,
+      );
+      if (!validCityIds) {
+        throw new NotFoundException('존재하지 않는 지역이 포함되어 있습니다.');
       }
     }
 
@@ -227,7 +230,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIds: payload.cityIds,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
