@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { EventRepository } from './event.repository';
 import { CreateEventPayload } from './payload/create-event.payload';
@@ -17,9 +18,12 @@ import { UserBaseInfo } from '../auth/type/user-base-info.type';
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
-  async createEvent(payload: CreateEventPayload): Promise<EventDto> {
+  async createEvent(
+    payload: CreateEventPayload,
+    user: UserBaseInfo,
+  ): Promise<EventDto> {
     const createData: CreateEventData = {
-      hostId: payload.hostId,
+      hostId: user.id,
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
@@ -90,11 +94,6 @@ export class EventService {
   }
 
   async joinEvent(eventId: number, user: UserBaseInfo): Promise<void> {
-    const validUser = await this.eventRepository.isUserExist(user.id);
-    if (!validUser) {
-      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
-    }
-
     const event = await this.eventRepository.getEventById(eventId);
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
@@ -159,11 +158,14 @@ export class EventService {
   ): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
-    await this.checkPermissionToModifyEvent(eventId, user.id);
-
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
     }
+
+    if (event.hostId !== user.id) {
+      throw new ForbiddenException('모임은 호스트만 수정이 가능합니다.');
+    }
+
     if (payload.title === null) {
       throw new BadRequestException('모임 이름은 null이 될 수 없습니다.');
     }
@@ -260,7 +262,9 @@ export class EventService {
       throw new NotFoundException('모임이 존재하지 않습니다.');
     }
 
-    await this.checkPermissionToModifyEvent(eventId, user.id);
+    if (event.hostId !== user.id) {
+      throw new ForbiddenException('모임은 호스트만 삭제가 가능합니다.');
+    }
 
     //시작전까지만 삭제 가능
     if (event.startTime < new Date()) {
@@ -268,20 +272,5 @@ export class EventService {
     }
 
     await this.eventRepository.deleteEvent(eventId);
-  }
-
-  private async checkPermissionToModifyEvent(
-    eventId: number,
-    userId: number,
-  ): Promise<void> {
-    const event = await this.eventRepository.getEventById(eventId);
-
-    if (!event) {
-      throw new NotFoundException('모임이 존재하지 않습니다.');
-    }
-
-    if (event.hostId !== userId) {
-      throw new ConflictException('모임을 수정할 권한이 없습니다.');
-    }
   }
 }

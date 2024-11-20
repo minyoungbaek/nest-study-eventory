@@ -35,10 +35,15 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '새로운 모임을 추가합니다' })
   @ApiCreatedResponse({ type: EventDto })
-  async createEvent(@Body() payload: CreateEventPayload): Promise<EventDto> {
-    return this.eventService.createEvent(payload);
+  async createEvent(
+    @Body() payload: CreateEventPayload,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<EventDto> {
+    return this.eventService.createEvent(payload, user);
   }
 
   @Get(':eventId')
@@ -61,7 +66,7 @@ export class EventController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '내가 참여한 모임 정보를 가져옵니다' })
-  @ApiCreatedResponse({ type: EventListDto })
+  @ApiOkResponse({ type: EventListDto })
   async getMyEvents(@CurrentUser() user: UserBaseInfo): Promise<EventListDto> {
     return this.eventService.getMyEvents(user);
   }
