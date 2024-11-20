@@ -33,11 +33,6 @@ export class EventService {
       maxPeople: payload.maxPeople,
     };
 
-    const HostExist = await this.eventRepository.isUserExist(payload.hostId);
-    if (!HostExist) {
-      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
-    }
-
     const CategoryExist = await this.eventRepository.isCategoryExist(
       payload.categoryId,
     );
@@ -122,11 +117,6 @@ export class EventService {
   }
 
   async outEvent(eventId: number, user: UserBaseInfo): Promise<void> {
-    const validUser = await this.eventRepository.isUserExist(user.id);
-    if (!validUser) {
-      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
-    }
-
     const event = await this.eventRepository.getEventById(eventId);
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
