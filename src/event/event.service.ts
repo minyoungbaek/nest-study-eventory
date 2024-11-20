@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { EventRepository } from './event.repository';
 import { CreateEventPayload } from './payload/create-event.payload';
@@ -11,15 +12,18 @@ import { EventQuery } from './query/event.query';
 import { CreateEventData } from './type/create-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { UpdateEventData } from './type/update-event-data.type';
-import { valid } from 'joi';
+import { UserBaseInfo } from '../auth/type/user-base-info.type';
 
 @Injectable()
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
-  async createEvent(payload: CreateEventPayload): Promise<EventDto> {
+  async createEvent(
+    payload: CreateEventPayload,
+    user: UserBaseInfo,
+  ): Promise<EventDto> {
     const createData: CreateEventData = {
-      hostId: payload.hostId,
+      hostId: user.id,
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
@@ -28,11 +32,6 @@ export class EventService {
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
     };
-
-    const HostExist = await this.eventRepository.isUserExist(payload.hostId);
-    if (!HostExist) {
-      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
-    }
 
     const CategoryExist = await this.eventRepository.isCategoryExist(
       payload.categoryId,
@@ -83,19 +82,20 @@ export class EventService {
     return EventListDto.from(events);
   }
 
-  async joinEvent(eventId: number, userId: number): Promise<void> {
-    const user = await this.eventRepository.isUserExist(userId);
-    if (!user) {
-      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
-    }
+  async getMyEvents(user: UserBaseInfo): Promise<EventListDto> {
+    const events = await this.eventRepository.getMyEvents(user.id);
 
+    return EventListDto.from(events);
+  }
+
+  async joinEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const event = await this.eventRepository.getEventById(eventId);
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
     }
 
     const userJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-      userId,
+      user.id,
       eventId,
     );
     if (userJoinedEvent) {
@@ -113,22 +113,17 @@ export class EventService {
       throw new ConflictException('이미 정원이 다 찼습니다.');
     }
 
-    await this.eventRepository.joinEvent(userId, eventId);
+    await this.eventRepository.joinEvent(user.id, eventId);
   }
 
-  async outEvent(eventId: number, userId: number): Promise<void> {
-    const user = await this.eventRepository.isUserExist(userId);
-    if (!user) {
-      throw new NotFoundException('해당 유저가 존재하지 않습니다.');
-    }
-
+  async outEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const event = await this.eventRepository.getEventById(eventId);
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
     }
 
     const userJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-      userId,
+      user.id,
       eventId,
     );
     if (!userJoinedEvent) {
@@ -139,22 +134,28 @@ export class EventService {
       throw new ConflictException('이미 종료된 모임에서는 나갈 수 없습니다.');
     }
 
-    if (event.hostId == userId) {
+    if (event.hostId == user.id) {
       throw new ConflictException('호스트는 모임에서 나갈 수 없습니다.');
     }
 
-    await this.eventRepository.outEvent(userId, eventId);
+    await this.eventRepository.outEvent(user.id, eventId);
   }
 
   async patchUpdateEvent(
     eventId: number,
     payload: PatchUpdateEventPayload,
+    user: UserBaseInfo,
   ): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
     }
+
+    if (event.hostId !== user.id) {
+      throw new ForbiddenException('모임은 호스트만 수정이 가능합니다.');
+    }
+
     if (payload.title === null) {
       throw new BadRequestException('모임 이름은 null이 될 수 없습니다.');
     }
@@ -244,11 +245,15 @@ export class EventService {
     return EventDto.from(updatedEvent);
   }
 
-  async deleteEvent(eventId: number): Promise<void> {
+  async deleteEvent(eventId: number, user: UserBaseInfo): Promise<void> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
+    }
+
+    if (event.hostId !== user.id) {
+      throw new ForbiddenException('모임은 호스트만 삭제가 가능합니다.');
     }
 
     //시작전까지만 삭제 가능
