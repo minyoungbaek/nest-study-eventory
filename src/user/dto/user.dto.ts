@@ -25,14 +25,14 @@ export class UserDto {
     type: Date,
     nullable: true,
   })
-  birthday?: Date | null;
+  birthday!: Date | null;
 
   @ApiProperty({
     description: '거주 지역',
     type: Number,
     nullable: true,
   })
-  cityId?: number | null;
+  cityId!: number | null;
 
   @ApiProperty({
     description: '카테고리',

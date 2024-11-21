@@ -73,10 +73,6 @@ export class UserService {
     }
 
     if (payload.cityId != undefined) {
-      if (payload.cityId == 0) {
-        throw new NotFoundException('해당 지역이 존재하지 않습니다.');
-      }
-
       const validCityId = await this.userRepository.isCityExist(payload.cityId);
 
       if (!validCityId) {

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Patch,
+  ParseIntPipe,
   HttpCode,
   Param,
   UseGuards,
@@ -34,7 +35,6 @@ export class UserController {
   }
 
   @Get(':userId')
-  @HttpCode(200)
   @ApiOperation({ summary: '특정 id의 유저 데이터를 가져옵니다' })
   @ApiOkResponse({ type: UserDto })
   async getUserInfoById(@Param('userId') userId: number): Promise<UserDto> {
@@ -48,7 +48,7 @@ export class UserController {
   @ApiOperation({ summary: '유저 정보를 수정합니다' })
   @ApiOkResponse({ type: UserDto })
   async updateUser(
-    @Param('userId') userId: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Body() payload: UpdateUserPayload,
     @CurrentUser() user: UserBaseInfo,
   ): Promise<UserDto> {
