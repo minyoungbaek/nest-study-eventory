@@ -72,7 +72,7 @@ export class UserService {
       }
     }
 
-    if (payload.cityId != undefined) {
+    if (payload.cityId !== null && payload.cityId !== undefined) {
       const validCityId = await this.userRepository.isCityExist(payload.cityId);
 
       if (!validCityId) {
@@ -80,7 +80,7 @@ export class UserService {
       }
     }
 
-    if (payload.categoryId) {
+    if (payload.categoryId !== undefined) {
       const validCategoryId = await this.userRepository.isCategoryExist(
         payload.categoryId,
       );

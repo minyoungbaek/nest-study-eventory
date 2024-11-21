@@ -25,6 +25,7 @@ export class UpdateUserPayload {
   @ApiPropertyOptional({
     description: '생일',
     type: Date,
+    nullable: true,
   })
   birthday?: Date | null;
 
@@ -33,6 +34,7 @@ export class UpdateUserPayload {
   @ApiPropertyOptional({
     description: '거주 지역',
     type: Number,
+    nullable: true,
   })
   cityId?: number | null;
 
