@@ -13,6 +13,7 @@ import { CreateEventData } from './type/create-event-data.type';
 import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { UpdateEventData } from './type/update-event-data.type';
 import { UserBaseInfo } from '../auth/type/user-base-info.type';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 
 @Injectable()
 export class EventService {
