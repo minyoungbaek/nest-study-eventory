@@ -122,11 +122,13 @@ model Review {
 model Club {
   id           Int      @id @default(autoincrement())
   name         String
-  clubLeaderId Int      @map("club_leader_id")
+  description  String
+  leaderId     Int      @map("club_leader_id")
+  maxPeople    Int      @map("max_people")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  clubLeader User @relation(fields: [clubLeaderId], references: [id])
+  leader User @relation(fields: [leaderId], references: [id])
 
   event    Event[] 
   clubJoin ClubJoin[]
@@ -138,7 +140,7 @@ model ClubJoin {
   id        Int      @id @default(autoincrement())
   clubId    Int      @map("club_id")
   userId    Int      @map("user_id")
-  status    String
+  status    Status
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -147,6 +149,11 @@ model ClubJoin {
 
   @@unique([clubId, userId])
   @@map("club_join")
+}
+
+enum Status {
+  PENDING
+  ACCEPTED
 }
 
 model Region {
