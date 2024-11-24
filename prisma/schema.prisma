@@ -123,7 +123,7 @@ model Club {
   id           Int      @id @default(autoincrement())
   name         String
   description  String
-  leaderId     Int      @map("club_leader_id")
+  leaderId     Int      @map("leader_id")
   maxPeople    Int      @map("max_people")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -137,12 +137,12 @@ model Club {
 }
 
 model ClubJoin {
-  id        Int      @id @default(autoincrement())
-  clubId    Int      @map("club_id")
-  userId    Int      @map("user_id")
-  status    Status
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        Int            @id @default(autoincrement())
+  clubId    Int            @map("club_id")
+  userId    Int            @map("user_id")
+  status    ClubJoinStatus @map("club_join_status")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
 
   club Club @relation(fields: [clubId], references: [id])
   user User @relation(fields: [userId], references: [id])
@@ -151,7 +151,7 @@ model ClubJoin {
   @@map("club_join")
 }
 
-enum Status {
+enum ClubJoinStatus {
   PENDING
   ACCEPTED
 }
