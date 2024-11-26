@@ -14,6 +14,12 @@ export class ClubRepository {
         description: data.description,
         leaderId: data.leaderId,
         maxPeople: data.maxPeople,
+        clubJoin: {
+          create: {
+            userId: data.leaderId,
+            status: 'ACCEPTED',
+          },
+        },
       },
       select: {
         id: true,
