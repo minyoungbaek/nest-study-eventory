@@ -68,6 +68,17 @@ export class ClubService {
       throw new BadRequestException('최대 인원은 null이 될 수 없습니다.');
     }
 
+    if (payload.maxPeople) {
+      const clubJoinCount =
+        await this.clubRepository.getClubMemberCount(clubId);
+
+      if (payload.maxPeople < clubJoinCount) {
+        throw new ConflictException(
+          '새로운 클럽 정원은 현재 클럽 인원보다 작을 수 없습니다.',
+        );
+      }
+    }
+
     const updateData: UpdateClubData = {
       name: payload.name,
       description: payload.description,

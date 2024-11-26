@@ -32,4 +32,48 @@ export class ClubRepository {
       },
     });
   }
+
+  async getClubById(clubId: number): Promise<ClubData | null> {
+    return this.prisma.club.findUnique({
+      where: {
+        id: clubId,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        leaderId: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async getClubMemberCount(clubId: number): Promise<number> {
+    return this.prisma.clubJoin.count({
+      where: {
+        clubId: clubId,
+        status: ClubJoinStatus.ACCEPTED,
+      },
+    });
+  }
+
+  async updateClub(clubId: number, data: UpdateClubData): Promise<ClubData> {
+    return this.prisma.club.update({
+      where: {
+        id: clubId,
+      },
+      data: {
+        name: data.name,
+        description: data.description,
+        maxPeople: data.maxPeople,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        leaderId: true,
+        maxPeople: true,
+      },
+    });
+  }
 }
