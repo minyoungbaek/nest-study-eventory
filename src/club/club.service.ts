@@ -92,4 +92,16 @@ export class ClubService {
 
     return ClubDto.from(updatedClub);
   }
+
+  async getClubs(): Promise<ClubListDto> {
+    const clubs = await this.clubRepository.getClubs();
+
+    return ClubListDto.from(clubs);
+  }
+
+  async getMyClubs(user: UserBaseInfo): Promise<ClubListDto> {
+    const clubs = await this.clubRepository.getMyClubs(user.id);
+
+    return ClubListDto.from(clubs);
+  }
 }

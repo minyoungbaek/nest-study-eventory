@@ -43,6 +43,31 @@ export class ClubController {
     return this.clubService.createClub(payload, user);
   }
 
+  @Get(':me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '내가 가입한 클럽 정보를 조회합니다' })
+  @ApiOkResponse({ type: ClubListDto })
+  async getMyClubs(@CurrentUser() user: UserBaseInfo): Promise<ClubListDto> {
+    return this.clubService.getMyClubs(user);
+  }
+
+  @Get(':clubId')
+  @ApiOperation({ summary: '클럽 정보를 조회합니다' })
+  @ApiOkResponse({ type: ClubDto })
+  async getClubById(
+    @Param('clubId', ParseIntPipe) clubId: number,
+  ): Promise<ClubDto> {
+    return this.clubService.getClubById(clubId);
+  }
+
+  @Get()
+  @ApiOperation({ summary: '여러 클럽 정보를 조회합니다' })
+  @ApiOkResponse({ type: ClubListDto })
+  async getClubs(): Promise<ClubListDto> {
+    return this.clubService.getClubs();
+  }
+
   @Patch(':clubId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
