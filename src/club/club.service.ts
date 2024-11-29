@@ -104,4 +104,28 @@ export class ClubService {
 
     return ClubListDto.from(clubs);
   }
+
+  async joinClub(clubId: number, user: UserBaseInfo): Promise<void> {
+    const club = await this.clubRepository.getClubById(clubId);
+    if (!club) {
+      throw new NotFoundException('클럽이 존재하지 않습니다.');
+    }
+
+    const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+      user.id,
+      clubId,
+    );
+    if (userJoinedClub) {
+      throw new ConflictException('이미 가입한 클럽입니다.');
+    }
+
+    const currentMemberCount =
+      await this.clubRepository.getClubMemberCount(clubId);
+
+    if (club.maxPeople == currentMemberCount) {
+      throw new ConflictException('이미 정원이 다 찼습니다.');
+    }
+
+    await this.clubRepository.joinClub(user.id, clubId);
+  }
 }
