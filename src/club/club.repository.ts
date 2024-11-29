@@ -95,6 +95,7 @@ export class ClubRepository {
         clubJoin: {
           some: {
             userId: userId,
+            status: ClubJoinStatus.ACCEPTED,
           },
         },
       },

@@ -43,17 +43,13 @@ export class ClubController {
     return this.clubService.createClub(payload, user);
   }
 
-  @Patch(':clubId')
+  @Get(':me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '클럽을 수정합니다' })
-  @ApiOkResponse({ type: ClubDto })
-  async UpdateEvent(
-    @Param('clubId', ParseIntPipe) clubId: number,
-    @Body() payload: UpdateClubPayload,
-    @CurrentUser() user: UserBaseInfo,
-  ): Promise<ClubDto> {
-    return this.clubService.updateClub(clubId, payload, user);
+  @ApiOperation({ summary: '내가 가입한 클럽 정보를 조회합니다' })
+  @ApiOkResponse({ type: ClubListDto })
+  async getMyClubs(@CurrentUser() user: UserBaseInfo): Promise<ClubListDto> {
+    return this.clubService.getMyClubs(user);
   }
 
   @Get(':clubId')
@@ -72,12 +68,16 @@ export class ClubController {
     return this.clubService.getClubs();
   }
 
-  @Get(':me')
+  @Patch(':clubId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '내가 가입한 클럽 정보를 조회합니다' })
-  @ApiOkResponse({ type: ClubListDto })
-  async getMyClubs(@CurrentUser() user: UserBaseInfo): Promise<ClubListDto> {
-    return this.clubService.getMyClubs(user);
+  @ApiOperation({ summary: '클럽을 수정합니다' })
+  @ApiOkResponse({ type: ClubDto })
+  async UpdateEvent(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @Body() payload: UpdateClubPayload,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<ClubDto> {
+    return this.clubService.updateClub(clubId, payload, user);
   }
 }
