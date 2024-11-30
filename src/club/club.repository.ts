@@ -140,4 +140,15 @@ export class ClubRepository {
       },
     });
   }
+
+  async outClub(userId: number, clubId: number): Promise<void> {
+    await this.prisma.clubJoin.delete({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+      },
+    });
+  }
 }
