@@ -56,8 +56,10 @@ export class EventService {
     }
 
     if (payload.clubId) {
-      const validClubId = await this.clubRepository.getClubById(payload.clubId);
-      if (!validClubId) {
+      const clubValidity = await this.clubRepository.getClubById(
+        payload.clubId,
+      );
+      if (!clubValidity) {
         throw new NotFoundException('해당 클럽이 존재하지 않습니다.');
       }
 
@@ -66,7 +68,9 @@ export class EventService {
         payload.clubId,
       );
       if (!userJoinedClub) {
-        throw new ConflictException('클럽 모임은 클럽원만 개설할 수 있습니다.');
+        throw new ForbiddenException(
+          '클럽 모임은 클럽원만 개설할 수 있습니다.',
+        );
       }
     }
 
@@ -125,6 +129,16 @@ export class EventService {
 
     if (event.endTime < new Date()) {
       throw new ConflictException('이미 종료된 모임에는 참가할 수 없습니다.');
+    }
+
+    if (event.clubId != null) {
+      const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+        user.id,
+        event.clubId,
+      );
+      if (!userJoinedClub) {
+        throw new ForbiddenException('클럽원만 참가할 수 있는 모임입니다.');
+      }
     }
 
     const currentParticipantCount =

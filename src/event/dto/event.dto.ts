@@ -27,7 +27,6 @@ export class EventDto {
   })
   description!: string;
 
-  @IsOptional()
   @ApiProperty({
     description: '클럽 ID',
     type: Number,
