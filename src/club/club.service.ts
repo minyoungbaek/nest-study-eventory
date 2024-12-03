@@ -9,6 +9,10 @@ import { ClubRepository } from './club.repository';
 import { CreateClubPayload } from './payload/create-club.payload';
 import { UpdateClubPayload } from './payload/update-club.payload';
 import { ClubDto, ClubListDto } from './dto/club.dto';
+import {
+  ClubApplicantDto,
+  ClubApplicantListDto,
+} from './dto/club-applicant.dto';
 import { CreateClubData } from './type/create-club-data.type';
 import { UpdateClubData } from './type/update-club-data.type';
 import { UserBaseInfo } from '../auth/type/user-base-info.type';
@@ -162,5 +166,16 @@ export class ClubService {
     }
 
     await this.clubRepository.outClub(user.id, clubId);
+  }
+
+  async getApplicants(clubId: number): Promise<ClubApplicantListDto> {
+    const club = await this.clubRepository.getClubById(clubId);
+    if (!club) {
+      throw new NotFoundException('클럽이 존재하지 않습니다.');
+    }
+
+    const applicants = await this.clubRepository.getApplicants(clubId);
+
+    return ClubApplicantListDto.from(applicants);
   }
 }
