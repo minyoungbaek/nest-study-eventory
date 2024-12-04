@@ -37,6 +37,7 @@ export class ClubRepository {
     return this.prisma.club.findUnique({
       where: {
         id: clubId,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -79,6 +80,9 @@ export class ClubRepository {
 
   async getClubs(): Promise<ClubData[]> {
     return this.prisma.club.findMany({
+      where: {
+        deletedAt: null,
+      },
       select: {
         id: true,
         name: true,
@@ -92,6 +96,7 @@ export class ClubRepository {
   async getMyClubs(userId: number): Promise<ClubData[]> {
     return this.prisma.club.findMany({
       where: {
+        deletedAt: null,
         clubJoin: {
           some: {
             userId: userId,
@@ -145,12 +150,15 @@ export class ClubRepository {
     await this.prisma.$transaction([
       this.prisma.clubJoin.deleteMany({
         where: {
-          clubId: clubId,
+          clubId,
         },
       }),
-      this.prisma.club.delete({
+      this.prisma.club.update({
         where: {
           id: clubId,
+        },
+        data: {
+          deletedAt: new Date(),
         },
       }),
     ]);
