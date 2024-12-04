@@ -3,6 +3,7 @@ export type EventData = {
   hostId: number;
   title: string;
   description: string;
+  clubId: number | null;
   categoryId: number;
   startTime: Date;
   endTime: Date;

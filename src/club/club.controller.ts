@@ -43,6 +43,31 @@ export class ClubController {
     return this.clubService.createClub(payload, user);
   }
 
+  @Get(':me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '내가 가입한 클럽 정보를 조회합니다' })
+  @ApiOkResponse({ type: ClubListDto })
+  async getMyClubs(@CurrentUser() user: UserBaseInfo): Promise<ClubListDto> {
+    return this.clubService.getMyClubs(user);
+  }
+
+  @Get(':clubId')
+  @ApiOperation({ summary: '클럽 정보를 조회합니다' })
+  @ApiOkResponse({ type: ClubDto })
+  async getClubById(
+    @Param('clubId', ParseIntPipe) clubId: number,
+  ): Promise<ClubDto> {
+    return this.clubService.getClubById(clubId);
+  }
+
+  @Get()
+  @ApiOperation({ summary: '여러 클럽 정보를 조회합니다' })
+  @ApiOkResponse({ type: ClubListDto })
+  async getClubs(): Promise<ClubListDto> {
+    return this.clubService.getClubs();
+  }
+
   @Patch(':clubId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -54,5 +79,31 @@ export class ClubController {
     @CurrentUser() user: UserBaseInfo,
   ): Promise<ClubDto> {
     return this.clubService.updateClub(clubId, payload, user);
+  }
+
+  @Post(':clubId/join')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽에 가입 신청합니다' })
+  @ApiNoContentResponse()
+  @HttpCode(204)
+  async joinClub(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<void> {
+    return this.clubService.joinClub(clubId, user);
+  }
+
+  @Delete(':clubId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(204)
+  @ApiOperation({ summary: '클럽을 삭제합니다' })
+  @ApiNoContentResponse()
+  async deleteClub(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<void> {
+    return this.clubService.deleteClub(clubId, user);
   }
 }

@@ -15,6 +15,7 @@ export class EventRepository {
         hostId: data.hostId,
         title: data.title,
         description: data.description,
+        clubId: data.clubId,
         categoryId: data.categoryId,
         startTime: data.startTime,
         endTime: data.endTime,
@@ -35,6 +36,7 @@ export class EventRepository {
         hostId: true,
         title: true,
         description: true,
+        clubId: true,
         categoryId: true,
         startTime: true,
         endTime: true,
@@ -92,6 +94,7 @@ export class EventRepository {
         hostId: true,
         title: true,
         description: true,
+        clubId: true,
         categoryId: true,
         eventCity: {
           select: {
@@ -144,6 +147,7 @@ export class EventRepository {
         hostId: true,
         title: true,
         description: true,
+        clubId: true,
         categoryId: true,
         eventCity: {
           select: {
@@ -201,6 +205,7 @@ export class EventRepository {
         hostId: true,
         title: true,
         description: true,
+        clubId: true,
         categoryId: true,
         eventCity: {
           select: {
@@ -244,6 +249,7 @@ export class EventRepository {
         hostId: true,
         title: true,
         description: true,
+        clubId: true,
         categoryId: true,
         eventCity: {
           select: {

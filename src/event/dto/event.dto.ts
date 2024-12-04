@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EventData } from '../type/event-data.type';
+import { IsOptional } from 'class-validator';
 
 export class EventDto {
   @ApiProperty({
@@ -25,6 +26,13 @@ export class EventDto {
     type: String,
   })
   description!: string;
+
+  @ApiProperty({
+    description: '클럽 ID',
+    type: Number,
+    nullable: true,
+  })
+  clubId!: number | null;
 
   @ApiProperty({
     description: '카테고리',
@@ -62,6 +70,7 @@ export class EventDto {
       hostId: event.hostId,
       title: event.title,
       description: event.description,
+      clubId: event.clubId,
       categoryId: event.categoryId,
       cityIds: event.eventCity.map((city) => city.cityId),
       startTime: event.startTime,

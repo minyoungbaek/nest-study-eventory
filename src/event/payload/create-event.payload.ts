@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsInt,
   IsString,
+  IsOptional,
   IsDate,
   IsArray,
   Min,
@@ -23,6 +24,15 @@ export class CreateEventPayload {
     type: String,
   })
   description!: string;
+
+  @IsOptional()
+  @IsInt()
+  @ApiProperty({
+    description: '클럽 ID',
+    type: Number,
+    nullable: true,
+  })
+  clubId?: number | null;
 
   @IsInt()
   @ApiProperty({

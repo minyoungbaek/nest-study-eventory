@@ -37,6 +37,7 @@ export class ClubRepository {
     return this.prisma.club.findUnique({
       where: {
         id: clubId,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -75,5 +76,91 @@ export class ClubRepository {
         maxPeople: true,
       },
     });
+  }
+
+  async getClubs(): Promise<ClubData[]> {
+    return this.prisma.club.findMany({
+      where: {
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        leaderId: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async getMyClubs(userId: number): Promise<ClubData[]> {
+    return this.prisma.club.findMany({
+      where: {
+        deletedAt: null,
+        clubJoin: {
+          some: {
+            userId: userId,
+            status: ClubJoinStatus.ACCEPTED,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        leaderId: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async isUserJoinedClub(userId: number, clubId: number): Promise<boolean> {
+    const clubJoin = await this.prisma.clubJoin.findUnique({
+      where: {
+        clubId_userId: {
+          clubId,
+          userId,
+        },
+        status: ClubJoinStatus.ACCEPTED,
+      },
+    });
+
+    return !!clubJoin;
+  }
+
+  async joinClub(userId: number, clubId: number): Promise<void> {
+    await this.prisma.clubJoin.create({
+      data: {
+        userId,
+        clubId,
+        status: ClubJoinStatus.PENDING,
+      },
+      select: {
+        id: true,
+        userId: true,
+        clubId: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async deleteClub(clubId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.clubJoin.deleteMany({
+        where: {
+          clubId,
+        },
+      }),
+      this.prisma.club.update({
+        where: {
+          id: clubId,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      }),
+    ]);
   }
 }
