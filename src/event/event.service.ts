@@ -14,26 +14,19 @@ import { PatchUpdateEventPayload } from './payload/patch-update-event.payload';
 import { UpdateEventData } from './type/update-event-data.type';
 import { UserBaseInfo } from '../auth/type/user-base-info.type';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { ClubRepository } from 'src/club/club.repository';
 
 @Injectable()
 export class EventService {
-  constructor(private readonly eventRepository: EventRepository) {}
+  constructor(
+    private readonly eventRepository: EventRepository,
+    private readonly clubRepository: ClubRepository,
+  ) {}
 
   async createEvent(
     payload: CreateEventPayload,
     user: UserBaseInfo,
   ): Promise<EventDto> {
-    const createData: CreateEventData = {
-      hostId: user.id,
-      title: payload.title,
-      description: payload.description,
-      categoryId: payload.categoryId,
-      cityIds: payload.cityIds,
-      startTime: payload.startTime,
-      endTime: payload.endTime,
-      maxPeople: payload.maxPeople,
-    };
-
     const CategoryExist = await this.eventRepository.isCategoryExist(
       payload.categoryId,
     );
@@ -61,6 +54,37 @@ export class EventService {
         '이미 지난 시간에 대한 모임은 생성할 수 없습니다.',
       );
     }
+
+    if (payload.clubId) {
+      const clubValidity = await this.clubRepository.getClubById(
+        payload.clubId,
+      );
+      if (!clubValidity) {
+        throw new NotFoundException('해당 클럽이 존재하지 않습니다.');
+      }
+
+      const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+        user.id,
+        payload.clubId,
+      );
+      if (!userJoinedClub) {
+        throw new ForbiddenException(
+          '클럽 모임은 클럽원만 개설할 수 있습니다.',
+        );
+      }
+    }
+
+    const createData: CreateEventData = {
+      hostId: user.id,
+      title: payload.title,
+      description: payload.description,
+      clubId: payload.clubId,
+      categoryId: payload.categoryId,
+      cityIds: payload.cityIds,
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+      maxPeople: payload.maxPeople,
+    };
 
     const event = await this.eventRepository.createEvent(createData);
 
@@ -105,6 +129,16 @@ export class EventService {
 
     if (event.endTime < new Date()) {
       throw new ConflictException('이미 종료된 모임에는 참가할 수 없습니다.');
+    }
+
+    if (event.clubId != null) {
+      const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+        user.id,
+        event.clubId,
+      );
+      if (!userJoinedClub) {
+        throw new ForbiddenException('클럽원만 참가할 수 있는 모임입니다.');
+      }
     }
 
     const currentParticipantCount =
