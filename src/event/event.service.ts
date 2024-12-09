@@ -91,18 +91,31 @@ export class EventService {
     return EventDto.from(event);
   }
 
-  async getEventById(eventId: number): Promise<EventDto> {
+  async getEventById(eventId: number, user: UserBaseInfo): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
     }
 
+    if (event.clubId) {
+      const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+        user.id,
+        event.clubId,
+      );
+      if (!userJoinedClub) {
+        throw new ForbiddenException('클럽원만 열람할 수 있는 모임입니다.');
+      }
+    }
+
     return EventDto.from(event);
   }
 
-  async getEvents(query: EventQuery): Promise<EventListDto> {
-    const events = await this.eventRepository.getEvents(query);
+  async getEvents(
+    query: EventQuery,
+    user: UserBaseInfo,
+  ): Promise<EventListDto> {
+    const events = await this.eventRepository.getEvents(query, user);
 
     return EventListDto.from(events);
   }

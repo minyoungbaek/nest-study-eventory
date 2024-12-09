@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ReviewRepository } from './review.repository';
 import { CreateReviewPayload } from './payload/create-review.payload';
@@ -14,10 +15,14 @@ import { PutUpdateReviewPayload } from './payload/put-update-review.payload';
 import { PatchUpdateReviewPayload } from './payload/patch-update-review.payload';
 import { UserBaseInfo } from '../auth/type/user-base-info.type';
 import { ReviewData } from './type/review-data.type';
+import { ClubRepository } from 'src/club/club.repository';
 
 @Injectable()
 export class ReviewService {
-  constructor(private readonly reviewRepository: ReviewRepository) {}
+  constructor(
+    private readonly reviewRepository: ReviewRepository,
+    private readonly clubRepository: ClubRepository,
+  ) {}
 
   async createReview(
     payload: CreateReviewPayload,
@@ -69,18 +74,39 @@ export class ReviewService {
     return ReviewDto.from(review);
   }
 
-  async getReviewById(reviewId: number): Promise<ReviewDto> {
+  async getReviewById(
+    reviewId: number,
+    user: UserBaseInfo,
+  ): Promise<ReviewDto> {
     const review = await this.reviewRepository.getReviewById(reviewId);
 
     if (!review) {
       throw new NotFoundException('Review가 존재하지 않습니다.');
     }
 
+    const event = await this.reviewRepository.getEventById(review.eventId);
+    if (!event) {
+      throw new NotFoundException('Event가 존재하지 않습니다.');
+    }
+
+    if (event.clubId) {
+      const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+        user.id,
+        event.clubId,
+      );
+      if (!userJoinedClub) {
+        throw new ForbiddenException('클럽원만 열람할 수 있는 리뷰입니다.');
+      }
+    }
+
     return ReviewDto.from(review);
   }
 
-  async getReviews(query: ReviewQuery): Promise<ReviewListDto> {
-    const reviews = await this.reviewRepository.getReviews(query);
+  async getReviews(
+    query: ReviewQuery,
+    user: UserBaseInfo,
+  ): Promise<ReviewListDto> {
+    const reviews = await this.reviewRepository.getReviews(query, user);
 
     return ReviewListDto.from(reviews);
   }
