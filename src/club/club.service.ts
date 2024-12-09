@@ -128,4 +128,18 @@ export class ClubService {
 
     await this.clubRepository.joinClub(user.id, clubId);
   }
+
+  async deleteClub(clubId: number, user: UserBaseInfo): Promise<void> {
+    const club = await this.clubRepository.getClubById(clubId);
+
+    if (!club) {
+      throw new NotFoundException('클럽이 존재하지 않습니다.');
+    }
+
+    if (club.leaderId !== user.id) {
+      throw new ForbiddenException('클럽은 클럽장만 삭제가 가능합니다.');
+    }
+
+    await this.clubRepository.deleteClub(clubId);
+  }
 }

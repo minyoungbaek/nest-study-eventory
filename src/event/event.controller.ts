@@ -46,22 +46,6 @@ export class EventController {
     return this.eventService.createEvent(payload, user);
   }
 
-  @Get(':eventId')
-  @ApiOperation({ summary: '특정 id의 모임 데이터를 가져옵니다' })
-  @ApiOkResponse({ type: EventDto })
-  async getEventById(
-    @Param('eventId', ParseIntPipe) eventId: number,
-  ): Promise<EventDto> {
-    return this.eventService.getEventById(eventId);
-  }
-
-  @Get()
-  @ApiOperation({ summary: '여러 모임 정보를 가져옵니다' })
-  @ApiCreatedResponse({ type: EventListDto })
-  async getEvent(@Query() query: EventQuery): Promise<EventListDto> {
-    return this.eventService.getEvents(query);
-  }
-
   @Get(':me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -69,6 +53,30 @@ export class EventController {
   @ApiOkResponse({ type: EventListDto })
   async getMyEvents(@CurrentUser() user: UserBaseInfo): Promise<EventListDto> {
     return this.eventService.getMyEvents(user);
+  }
+
+  @Get(':eventId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '특정 id의 모임 데이터를 가져옵니다' })
+  @ApiOkResponse({ type: EventDto })
+  async getEventById(
+    @Param('eventId', ParseIntPipe) eventId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<EventDto> {
+    return this.eventService.getEventById(eventId, user);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '여러 모임 정보를 가져옵니다' })
+  @ApiCreatedResponse({ type: EventListDto })
+  async getEvent(
+    @Query() query: EventQuery,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<EventListDto> {
+    return this.eventService.getEvents(query, user);
   }
 
   @Post(':eventId/join')
