@@ -175,6 +175,9 @@ export class ClubRepository {
         where: {
           event: {
             clubId: clubId,
+            startTime: {
+              gt: new Date(),
+            },
           },
         },
       }),
@@ -186,15 +189,54 @@ export class ClubRepository {
           },
         },
       }),
-      this.prisma.event.updateMany({
-        where: {
-          clubId: clubId,
-          startTime: { lte: new Date() },
-        },
-        data: {
-          clubId: null,
-        },
-      }),
     ]);
+  }
+
+  async getUserJoinedClubs(userId: number): Promise<number[]> {
+    const joinedClubs = await this.prisma.clubJoin.findMany({
+      where: {
+        userId: userId,
+        status: ClubJoinStatus.ACCEPTED,
+      },
+      select: {
+        clubId: true,
+      },
+    });
+
+    return joinedClubs.map((clubJoin) => clubJoin.clubId);
+  }
+
+  async getClubDeletedStatus(
+    clubIds: number[],
+  ): Promise<Record<number, boolean>> {
+    if (clubIds.length === 0) {
+      return {};
+    }
+
+    const clubs = await this.prisma.club.findMany({
+      where: {
+        id: {
+          in: clubIds,
+        },
+      },
+      select: {
+        id: true,
+        deletedAt: true,
+      },
+    });
+
+    const clubStatusMap: Record<number, boolean> = {};
+
+    clubs.forEach((club) => {
+      clubStatusMap[club.id] = !!club.deletedAt;
+    });
+
+    clubIds.forEach((clubId) => {
+      if (!(clubId in clubStatusMap)) {
+        clubStatusMap[clubId] = false;
+      }
+    });
+
+    return clubStatusMap;
   }
 }

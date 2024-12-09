@@ -190,63 +190,9 @@ export class EventRepository {
     });
   }
 
-  async getEvents(query: EventQuery, user: UserBaseInfo): Promise<EventData[]> {
-    const joinedClubs = await this.prisma.clubJoin
-      .findMany({
-        where: {
-          userId: user.id,
-          status: 'ACCEPTED',
-        },
-        select: {
-          clubId: true,
-        },
-      })
-      .then((clubJoins) => clubJoins.map((clubJoin) => clubJoin.clubId));
-
-    const joinedEvents = await this.prisma.eventJoin
-      .findMany({
-        where: {
-          userId: user.id,
-        },
-        select: {
-          eventId: true,
-        },
-      })
-      .then((eventJoins) => eventJoins.map((eventJoin) => eventJoin.eventId));
-
+  async getEvents(query: EventQuery): Promise<EventData[]> {
     return this.prisma.event.findMany({
       where: {
-        AND: [
-          {
-            OR: [
-              { clubId: null },
-              { clubId: { in: joinedClubs } },
-              { id: { in: joinedEvents } },
-            ],
-          },
-          {
-            OR: [
-              { endTime: { gt: new Date() } },
-              {
-                AND: [
-                  { endTime: { lte: new Date() } },
-                  {
-                    OR: [
-                      { id: { in: joinedEvents } },
-                      { clubId: null },
-                      {
-                        AND: [
-                          { clubId: { in: joinedClubs } },
-                          { id: { notIn: joinedEvents } },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
         hostId: query.hostId,
         categoryId: query.categoryId,
         eventCity: {
@@ -332,5 +278,18 @@ export class EventRepository {
         },
       }),
     ]);
+  }
+
+  async getUserJoinedEvents(userId: number): Promise<number[]> {
+    const joinedEvents = await this.prisma.eventJoin.findMany({
+      where: {
+        userId: userId,
+      },
+      select: {
+        eventId: true,
+      },
+    });
+
+    return joinedEvents.map((eventJoin) => eventJoin.eventId);
   }
 }

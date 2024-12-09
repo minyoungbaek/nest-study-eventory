@@ -115,9 +115,39 @@ export class EventService {
     query: EventQuery,
     user: UserBaseInfo,
   ): Promise<EventListDto> {
-    const events = await this.eventRepository.getEvents(query, user);
+    const events = await this.eventRepository.getEvents(query);
 
-    return EventListDto.from(events);
+    if (!events || events.length === 0) {
+      return EventListDto.from([]);
+    }
+
+    const clubIds = events
+      .filter((event) => event.clubId !== null)
+      .map((event) => event.clubId as number);
+
+    const userJoinedClubs = await this.clubRepository.getUserJoinedClubs(
+      user.id,
+    );
+    const userJoinedEvents = await this.eventRepository.getUserJoinedEvents(
+      user.id,
+    );
+    const clubDeletedStatus =
+      await this.clubRepository.getClubDeletedStatus(clubIds);
+
+    const filteredEvents = events.filter((event) => {
+      if (!event.clubId) {
+        return true;
+      }
+
+      const clubDeleted = clubDeletedStatus[event.clubId] ?? false;
+      if (clubDeleted) {
+        return userJoinedEvents.includes(event.id);
+      }
+
+      return userJoinedClubs.includes(event.clubId);
+    });
+
+    return EventListDto.from(filteredEvents);
   }
 
   async getMyEvents(user: UserBaseInfo): Promise<EventListDto> {
