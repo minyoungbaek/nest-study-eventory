@@ -91,20 +91,63 @@ export class EventService {
     return EventDto.from(event);
   }
 
-  async getEventById(eventId: number): Promise<EventDto> {
+  async getEventById(eventId: number, user: UserBaseInfo): Promise<EventDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
       throw new NotFoundException('모임이 존재하지 않습니다.');
     }
 
+    if (event.clubId) {
+      const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+        user.id,
+        event.clubId,
+      );
+      if (!userJoinedClub) {
+        throw new ForbiddenException('클럽원만 열람할 수 있는 모임입니다.');
+      }
+    }
+
     return EventDto.from(event);
   }
 
-  async getEvents(query: EventQuery): Promise<EventListDto> {
+  async getEvents(
+    query: EventQuery,
+    user: UserBaseInfo,
+  ): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
 
-    return EventListDto.from(events);
+    if (!events || events.length === 0) {
+      return EventListDto.from([]);
+    }
+
+    const clubIds = events
+      .filter((event) => event.clubId !== null)
+      .map((event) => event.clubId as number);
+
+    const userJoinedClubs = await this.clubRepository.getUserJoinedClubs(
+      user.id,
+    );
+    const userJoinedEvents = await this.eventRepository.getUserJoinedEvents(
+      user.id,
+    );
+    const clubDeletedStatus =
+      await this.clubRepository.getClubDeletedStatus(clubIds);
+
+    const filteredEvents = events.filter((event) => {
+      if (!event.clubId) {
+        return true;
+      }
+
+      const clubDeleted = clubDeletedStatus[event.clubId] ?? false;
+      if (clubDeleted) {
+        return userJoinedEvents.includes(event.id);
+      }
+
+      return userJoinedClubs.includes(event.clubId);
+    });
+
+    return EventListDto.from(filteredEvents);
   }
 
   async getMyEvents(user: UserBaseInfo): Promise<EventListDto> {
