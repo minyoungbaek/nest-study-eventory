@@ -16,12 +16,14 @@ import { PatchUpdateReviewPayload } from './payload/patch-update-review.payload'
 import { UserBaseInfo } from '../auth/type/user-base-info.type';
 import { ReviewData } from './type/review-data.type';
 import { ClubRepository } from 'src/club/club.repository';
+import { EventRepository } from 'src/event/event.repository';
 
 @Injectable()
 export class ReviewService {
   constructor(
     private readonly reviewRepository: ReviewRepository,
     private readonly clubRepository: ClubRepository,
+    private readonly eventRepository: EventRepository,
   ) {}
 
   async createReview(
@@ -108,7 +110,41 @@ export class ReviewService {
   ): Promise<ReviewListDto> {
     const reviews = await this.reviewRepository.getReviews(query, user);
 
-    return ReviewListDto.from(reviews);
+    if (!reviews || reviews.length === 0) {
+      return ReviewListDto.from([]);
+    }
+
+    const eventIds = reviews.map((review) => review.eventId);
+    const events = await this.reviewRepository.getEventsByIds(eventIds);
+
+    const cludIds = events
+      .filter((event) => event.clubId !== null)
+      .map((event) => event.clubId as number);
+
+    const userJoinedClubs = await this.clubRepository.getUserJoinedClubs(
+      user.id,
+    );
+    const userJoinedEvents = await this.eventRepository.getUserJoinedEvents(
+      user.id,
+    );
+    const clubDeletedStatus =
+      await this.clubRepository.getClubDeletedStatus(cludIds);
+
+    const filteredReviews = reviews.filter((review) => {
+      const event = events.find((event) => event.id === review.eventId);
+      if (!event || !event.clubId) {
+        return true;
+      }
+
+      const clubDeleted = clubDeletedStatus[event.clubId] ?? false;
+      if (clubDeleted) {
+        return userJoinedEvents.includes(event.id);
+      }
+
+      return userJoinedClubs.includes(event.clubId);
+    });
+
+    return ReviewListDto.from(filteredReviews);
   }
 
   async putUpdateReview(
