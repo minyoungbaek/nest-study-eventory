@@ -4,7 +4,6 @@ import { CreateClubData } from './type/create-club-data.type';
 import { ClubData } from './type/club-data.type';
 import { ClubJoinStatus } from '@prisma/client';
 import { UpdateClubData } from './type/update-club-data.type';
-
 @Injectable()
 export class ClubRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -241,6 +240,64 @@ export class ClubRepository {
   }
 
   async outClub(userId: number, clubId: number): Promise<void> {
+    const clubEvents = await this.prisma.event.findMany({
+      where: {
+        clubId: clubId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        startTime: true,
+      },
+    });
+
+    const upcomingEvents = clubEvents.filter(
+      (event) => event.startTime > new Date(),
+    );
+    const deleteEvents = upcomingEvents.filter(
+      (event) => event.hostId === userId,
+    );
+    const leaveEvents = upcomingEvents.filter(
+      (event) => event.hostId !== userId,
+    );
+
+    if (deleteEvents.length > 0) {
+      await this.prisma.$transaction([
+        this.prisma.eventJoin.deleteMany({
+          where: {
+            eventId: {
+              in: deleteEvents.map((event) => event.id),
+            },
+          },
+        }),
+        this.prisma.eventCity.deleteMany({
+          where: {
+            eventId: {
+              in: deleteEvents.map((event) => event.id),
+            },
+          },
+        }),
+        this.prisma.event.deleteMany({
+          where: {
+            id: {
+              in: deleteEvents.map((event) => event.id),
+            },
+          },
+        }),
+      ]);
+    }
+
+    if (leaveEvents.length > 0) {
+      await this.prisma.eventJoin.deleteMany({
+        where: {
+          eventId: {
+            in: leaveEvents.map((event) => event.id),
+          },
+          userId: userId,
+        },
+      });
+    }
+
     await this.prisma.clubJoin.delete({
       where: {
         clubId_userId: {

@@ -105,7 +105,8 @@ export class ClubController {
     @CurrentUser() user: UserBaseInfo,
   ): Promise<void> {
     return this.clubService.deleteClub(clubId, user);
-    
+  }
+
   @Post(':clubId/out')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
