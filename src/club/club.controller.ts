@@ -131,7 +131,8 @@ export class ClubController {
   @ApiOkResponse({ type: ClubApplicantListDto })
   async getApplicants(
     @Param('clubId', ParseIntPipe) clubId: number,
+    @CurrentUser() user: UserBaseInfo,
   ): Promise<ClubApplicantListDto> {
-    return this.clubService.getApplicants(clubId);
+    return this.clubService.getApplicants(clubId, user);
   }
 }

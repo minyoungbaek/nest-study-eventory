@@ -168,10 +168,19 @@ export class ClubService {
     await this.clubRepository.outClub(user.id, clubId);
   }
 
-  async getApplicants(clubId: number): Promise<ClubApplicantListDto> {
+  async getApplicants(
+    clubId: number,
+    user: UserBaseInfo,
+  ): Promise<ClubApplicantListDto> {
     const club = await this.clubRepository.getClubById(clubId);
     if (!club) {
       throw new NotFoundException('클럽이 존재하지 않습니다.');
+    }
+
+    if (club.leaderId !== user.id) {
+      throw new ForbiddenException(
+        '클럽장만 가입 신청자 목록을 볼 수 있습니다',
+      );
     }
 
     const applicants = await this.clubRepository.getApplicants(clubId);
