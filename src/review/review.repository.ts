@@ -5,6 +5,8 @@ import { ReviewData } from './type/review-data.type';
 import { User, Event } from '@prisma/client';
 import { ReviewQuery } from './query/review.query';
 import { UpdateReviewData } from './type/update-review-data.type';
+import { UserBaseInfo } from '../auth/type/user-base-info.type';
+import { EventData } from '../event/type/event-data.type';
 
 @Injectable()
 export class ReviewRepository {
@@ -43,6 +45,31 @@ export class ReviewRepository {
     return this.prisma.event.findUnique({
       where: {
         id: eventId,
+      },
+    });
+  }
+
+  async getEventsByIds(eventIds: number[]): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        id: { in: eventIds },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        clubId: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            id: true,
+            cityId: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
       },
     });
   }
@@ -95,10 +122,51 @@ export class ReviewRepository {
     });
   }
 
-  async getReviews(query: ReviewQuery): Promise<ReviewData[]> {
+  async getReviews(
+    query: ReviewQuery,
+    user: UserBaseInfo,
+  ): Promise<ReviewData[]> {
+    const joinedClubs = await this.prisma.clubJoin
+      .findMany({
+        where: {
+          userId: user.id,
+          status: 'ACCEPTED',
+        },
+        select: {
+          clubId: true,
+        },
+      })
+      .then((clubJoins) => clubJoins.map((clubJoin) => clubJoin.clubId));
+
+    const joinedEvents = await this.prisma.eventJoin
+      .findMany({
+        where: {
+          userId: user.id,
+        },
+        select: {
+          eventId: true,
+        },
+      })
+      .then((eventJoins) => eventJoins.map((eventJoin) => eventJoin.eventId));
+
     return this.prisma.review.findMany({
       where: {
-        eventId: query.eventId,
+        AND: [
+          { eventId: query.eventId },
+          {
+            OR: [
+              { event: { clubId: null } },
+              { event: { clubId: { in: joinedClubs } } },
+              {
+                AND: [
+                  { event: { endTime: { lte: new Date() } } },
+                  { event: { clubId: null } },
+                  { eventId: { in: joinedEvents } },
+                ],
+              },
+            ],
+          },
+        ],
         user: {
           deletedAt: null,
           id: query.userId,

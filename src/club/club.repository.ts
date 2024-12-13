@@ -37,6 +37,7 @@ export class ClubRepository {
     return this.prisma.club.findUnique({
       where: {
         id: clubId,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -79,6 +80,9 @@ export class ClubRepository {
 
   async getClubs(): Promise<ClubData[]> {
     return this.prisma.club.findMany({
+      where: {
+        deletedAt: null,
+      },
       select: {
         id: true,
         name: true,
@@ -92,6 +96,7 @@ export class ClubRepository {
   async getMyClubs(userId: number): Promise<ClubData[]> {
     return this.prisma.club.findMany({
       where: {
+        deletedAt: null,
         clubJoin: {
           some: {
             userId: userId,
@@ -139,5 +144,99 @@ export class ClubRepository {
         updatedAt: true,
       },
     });
+  }
+
+  async deleteClub(clubId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.club.update({
+        where: {
+          id: clubId,
+        },
+        data: {
+          deletedAt: new Date(),
+        },
+      }),
+      this.prisma.clubJoin.deleteMany({
+        where: {
+          clubId,
+        },
+      }),
+      this.prisma.eventJoin.deleteMany({
+        where: {
+          event: {
+            clubId: clubId,
+            startTime: {
+              gt: new Date(),
+            },
+          },
+        },
+      }),
+      this.prisma.eventCity.deleteMany({
+        where: {
+          event: {
+            clubId: clubId,
+            startTime: {
+              gt: new Date(),
+            },
+          },
+        },
+      }),
+      this.prisma.event.deleteMany({
+        where: {
+          clubId: clubId,
+          startTime: {
+            gt: new Date(),
+          },
+        },
+      }),
+    ]);
+  }
+
+  async getUserJoinedClubs(userId: number): Promise<number[]> {
+    const joinedClubs = await this.prisma.clubJoin.findMany({
+      where: {
+        userId: userId,
+        status: ClubJoinStatus.ACCEPTED,
+      },
+      select: {
+        clubId: true,
+      },
+    });
+
+    return joinedClubs.map((clubJoin) => clubJoin.clubId);
+  }
+
+  async getClubDeletedStatus(
+    clubIds: number[],
+  ): Promise<Record<number, boolean>> {
+    if (clubIds.length === 0) {
+      return {};
+    }
+
+    const clubs = await this.prisma.club.findMany({
+      where: {
+        id: {
+          in: clubIds,
+        },
+      },
+      select: {
+        id: true,
+        deletedAt: true,
+      },
+    });
+
+    const clubStatusMap: Record<number, boolean> = {};
+
+    clubs.forEach((club) => {
+      clubStatusMap[club.id] = !!club.deletedAt;
+    });
+
+    clubIds.forEach((clubId) => {
+      if (!(clubId in clubStatusMap)) {
+        clubStatusMap[clubId] = false;
+      }
+    });
+
+    return clubStatusMap;
   }
 }

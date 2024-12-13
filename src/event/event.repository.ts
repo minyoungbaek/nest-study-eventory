@@ -4,6 +4,7 @@ import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
 import { EventQuery } from './query/event.query';
 import { UpdateEventData } from './type/update-event-data.type';
+import { UserBaseInfo } from '../auth/type/user-base-info.type';
 
 @Injectable()
 export class EventRepository {
@@ -277,5 +278,18 @@ export class EventRepository {
         },
       }),
     ]);
+  }
+
+  async getUserJoinedEvents(userId: number): Promise<number[]> {
+    const joinedEvents = await this.prisma.eventJoin.findMany({
+      where: {
+        userId: userId,
+      },
+      select: {
+        eventId: true,
+      },
+    });
+
+    return joinedEvents.map((eventJoin) => eventJoin.eventId);
   }
 }
