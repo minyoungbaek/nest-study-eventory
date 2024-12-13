@@ -106,4 +106,17 @@ export class ClubController {
   ): Promise<void> {
     return this.clubService.deleteClub(clubId, user);
   }
+
+  @Post(':clubId/out')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽에서 탈퇴합니다' })
+  @ApiNoContentResponse()
+  @HttpCode(204)
+  async outClub(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<void> {
+    return this.clubService.outClub(clubId, user);
+  }
 }

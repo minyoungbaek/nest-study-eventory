@@ -142,4 +142,25 @@ export class ClubService {
 
     await this.clubRepository.deleteClub(clubId);
   }
+
+  async outClub(clubId: number, user: UserBaseInfo): Promise<void> {
+    const club = await this.clubRepository.getClubById(clubId);
+    if (!club) {
+      throw new NotFoundException('클럽이 존재하지 않습니다.');
+    }
+
+    const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+      user.id,
+      clubId,
+    );
+    if (!userJoinedClub) {
+      throw new ConflictException('가입하지 않은 클럽입니다.');
+    }
+
+    if (club.leaderId == user.id) {
+      throw new ConflictException('클럽장은 클럽에서 탈퇴할 수 없습니다.');
+    }
+
+    await this.clubRepository.outClub(user.id, clubId);
+  }
 }
