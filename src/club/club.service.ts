@@ -187,4 +187,29 @@ export class ClubService {
 
     return ClubApplicantListDto.from(applicants);
   }
+
+  async approveApplicant(
+    clubId: number,
+    userId: number,
+    user: UserBaseInfo,
+  ): Promise<void> {
+    const club = await this.clubRepository.getClubById(clubId);
+    if (!club) {
+      throw new NotFoundException('클럽이 존재하지 않습니다.');
+    }
+
+    if (club.leaderId !== user.id) {
+      throw new ForbiddenException('클럽장만 가입 신청을 승인할 수 있습니다.');
+    }
+
+    const applicant = await this.clubRepository.isUserSignedUpForClub(
+      userId,
+      clubId,
+    );
+    if (!applicant) {
+      throw new NotFoundException('가입 신청이 존재하지 않습니다.');
+    }
+
+    await this.clubRepository.approveApplicant(userId, clubId);
+  }
 }
