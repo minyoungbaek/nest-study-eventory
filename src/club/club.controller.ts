@@ -163,4 +163,18 @@ export class ClubController {
   ): Promise<void> {
     return this.clubService.rejectApplicant(clubId, userId, user);
   }
+
+  @Patch(':clubId/transferLeader/:newLeaderId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽장을 위임합니다' })
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  async transferLeader(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @Param('newLeaderId', ParseIntPipe) newLeaderId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<void> {
+    return this.clubService.transferLeader(clubId, newLeaderId, user);
+  }
 }

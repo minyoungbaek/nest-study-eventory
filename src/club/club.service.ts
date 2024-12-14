@@ -237,4 +237,29 @@ export class ClubService {
 
     await this.clubRepository.rejectApplicant(userId, clubId);
   }
+
+  async transferLeader(
+    clubId: number,
+    newLeaderId: number,
+    user: UserBaseInfo,
+  ): Promise<void> {
+    const club = await this.clubRepository.getClubById(clubId);
+    if (!club) {
+      throw new NotFoundException('클럽이 존재하지 않습니다.');
+    }
+
+    if (club.leaderId !== user.id) {
+      throw new ForbiddenException('클럽장만 클럽장을 위임할 수 있습니다.');
+    }
+
+    const userJoinedClub = await this.clubRepository.isUserJoinedClub(
+      newLeaderId,
+      clubId,
+    );
+    if (!userJoinedClub) {
+      throw new NotFoundException('클럽에 가입하지 않은 유저입니다.');
+    }
+
+    await this.clubRepository.transferLeader(clubId, newLeaderId);
+  }
 }
