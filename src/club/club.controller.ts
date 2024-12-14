@@ -149,4 +149,18 @@ export class ClubController {
   ): Promise<void> {
     return this.clubService.approveApplicant(clubId, userId, user);
   }
+
+  @Delete(':clubId/reject/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽 가입 신청을 거절합니다' })
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  async rejectApplicant(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<void> {
+    return this.clubService.rejectApplicant(clubId, userId, user);
+  }
 }

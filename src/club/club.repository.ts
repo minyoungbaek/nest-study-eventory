@@ -357,4 +357,15 @@ export class ClubRepository {
       },
     });
   }
+
+  async rejectApplicant(userId: number, clubId: number): Promise<void> {
+    await this.prisma.clubJoin.delete({
+      where: {
+        clubId_userId: {
+          clubId: clubId,
+          userId: userId,
+        },
+      },
+    });
+  }
 }
