@@ -327,4 +327,34 @@ export class ClubRepository {
       },
     });
   }
+
+  async isUserSignedUpForClub(
+    userId: number,
+    clubId: number,
+  ): Promise<boolean> {
+    const clubJoin = await this.prisma.clubJoin.findUnique({
+      where: {
+        clubId_userId: {
+          clubId: clubId,
+          userId: userId,
+        },
+      },
+    });
+
+    return !!clubJoin;
+  }
+
+  async approveApplicant(userId: number, clubId: number): Promise<void> {
+    await this.prisma.clubJoin.update({
+      where: {
+        clubId_userId: {
+          clubId: clubId,
+          userId: userId,
+        },
+      },
+      data: {
+        status: ClubJoinStatus.ACCEPTED,
+      },
+    });
+  }
 }

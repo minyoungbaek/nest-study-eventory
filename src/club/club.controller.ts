@@ -135,4 +135,18 @@ export class ClubController {
   ): Promise<ClubApplicantListDto> {
     return this.clubService.getApplicants(clubId, user);
   }
+
+  @Patch(':clubId/approve/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '클럽 가입 신청을 승인합니다' })
+  @HttpCode(204)
+  @ApiNoContentResponse()
+  async approveApplicant(
+    @Param('clubId', ParseIntPipe) clubId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @CurrentUser() user: UserBaseInfo,
+  ): Promise<void> {
+    return this.clubService.approveApplicant(clubId, userId, user);
+  }
 }
