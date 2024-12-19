@@ -369,4 +369,15 @@ export class ClubRepository {
       },
     });
   }
+
+  async transferLeader(clubId: number, newLeaderId: number): Promise<void> {
+    await this.prisma.club.update({
+      where: {
+        id: clubId,
+      },
+      data: {
+        leaderId: newLeaderId,
+      },
+    });
+  }
 }
