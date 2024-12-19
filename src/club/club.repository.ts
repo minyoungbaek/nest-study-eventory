@@ -338,6 +338,7 @@ export class ClubRepository {
           clubId: clubId,
           userId: userId,
         },
+        status: ClubJoinStatus.PENDING,
       },
     });
 
@@ -354,6 +355,17 @@ export class ClubRepository {
       },
       data: {
         status: ClubJoinStatus.ACCEPTED,
+      },
+    });
+  }
+
+  async rejectApplicant(userId: number, clubId: number): Promise<void> {
+    await this.prisma.clubJoin.delete({
+      where: {
+        clubId_userId: {
+          clubId: clubId,
+          userId: userId,
+        },
       },
     });
   }
